@@ -54,9 +54,9 @@ Type : "int" { Base MyInt }
 parseError :: [Token] -> a
 parseError tokens = error ("Parse error" ++ show tokens)
 
-main = do
-    s <- getContents
-    let parseTree = parser $ alexScanTokens s
-    print $ parseTree
+--main = do
+--    s <- getContents
+--    let parseTree = parser $ alexScanTokens s
+--    print $ parseTree
 
 }

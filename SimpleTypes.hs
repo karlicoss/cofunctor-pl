@@ -2,6 +2,8 @@ import Datatypes
 import Data.List (delete, union, (\\), find)
 import Data.Maybe (fromJust)
 import Debug.Trace (trace)
+import Lexer (alexScanTokens)
+import Parser (parser)
 
 type Context = [(VarName, Type)]
 
@@ -88,14 +90,27 @@ eterm1 = eval term1
 
 termlet = Let "x" tintid (tintidid `App` (Var "x"))
 
-main = do
-    print $ tintid
-    print $ gettype [] tintid
-    print $ tintidid
-    print $ gettype [] tintidid
-    print $ term1
-    print $ gettype [("x", Base MyInt)] term1
-    print $ termlet
-    print $ gettype [] termlet
-    print $ eterm1
-    print $ gettype [("x", Base MyInt)] eterm1
+alala = do
+  s <- getLine
+  let t = parser $ alexScanTokens s
+  putStr $ show t ++ " :: "
+  case gettype [] t of
+    Just tp -> do putStrLn $ show tp
+                  let et = eval t
+                  putStrLn $ show et ++ " :: " ++ (show $ fromJust $ gettype [] et)
+    Nothing -> do putStrLn $ "type error"
+                  alala
+
+main = alala
+
+--main = do
+--    print $ tintid
+--    print $ gettype [] tintid
+--    print $ tintidid
+--    print $ gettype [] tintidid
+--    print $ term1
+--    print $ gettype [("x", Base MyInt)] term1
+--    print $ termlet
+--    print $ gettype [] termlet
+--    print $ eterm1
+--    print $ gettype [("x", Base MyInt)] eterm1
