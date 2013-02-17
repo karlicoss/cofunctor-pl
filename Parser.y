@@ -30,9 +30,10 @@ Term : AppTerm { $1 }
      | "\\" "var" "::" Type "." Term { Lam $2 $4 $6 }
      | "var" { Var $1 }
 
+AppTerm : AppTerm1 { foldl App (head $1) (tail $1) }
 
-AppTerm : ATerm { $1 }
-        | AppTerm ATerm { $1 `App` $2 }
+AppTerm1 : ATerm { [$1] }
+         | ATerm AppTerm1 { $1 : $2 }
 
 ATerm : "(" Term ")" { $2 }
 
