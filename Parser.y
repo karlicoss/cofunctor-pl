@@ -1,11 +1,12 @@
 {
-    module Main where
-    import Lexer
+module Parser where
+
+import Lexer
 }
 
 %name parser
 %tokentype { Token }
-%error { ParseError }
+%error { parseError }
 
 %token
     "let"    { TokenLet }
@@ -25,21 +26,26 @@
 
 %%
 
+Term :: { Term }
 Term : AppTerm { $1 }
      | "let" "var" "=" Term "in" Term { Let $2 $4 $6 }
      | "\\" "var" "::" Type "." Term { Lam $2 $4 $6 }
-     | "var" { Var $1 }
 
-AppTerm : AppTerm1 { foldl App (head $1) (tail $1) }
+AppTerm :: { Term }
+AppTerm : AppTerm1 { foldl App (head $1) (tail $1) } -- left recursion elimination
 
+AppTerm1 :: { [ Term ] }
 AppTerm1 : ATerm { [$1] }
          | ATerm AppTerm1 { $1 : $2 }
 
+ATerm :: { Term }
 ATerm : "(" Term ")" { $2 }
+      | "var" { Var $1 }
 
+Type :: { Type } 
 Type : "int" { Base MyInt }
      | "bool" { Base MyBool }
-     | "(" Type ")" { $1 }
+     | "(" Type ")" { $2 }
      | Type "->" Type { $1 :-> $3 }
 
 {

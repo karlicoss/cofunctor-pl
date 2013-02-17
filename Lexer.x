@@ -1,5 +1,5 @@
 {
-module Main (main) where
+module Lexer where
 }
 
 %wrapper "basic"
