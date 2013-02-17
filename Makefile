@@ -1,6 +1,6 @@
 all : parser
 
-parser : Parser.y lexer
+parser : Parser.y lexer Datatypes.hs
 	happy --info Parser.y
 
 lexer : Lexer.x
