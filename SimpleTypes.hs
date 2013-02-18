@@ -52,6 +52,7 @@ subst v what t@(Let v2 t1 t2) | v == v2                             = t
                               | otherwise                           = let fv = freshvar (v2 : free what `union` free t1 `union` free t2)
                                                                       in Let fv (subst v what (rename v2 fv t1)) (subst v what (rename v2 fv t2))
 
+-- TODO abstract reduction strategy
 evalaux :: Term -> (Bool, Term)
 evalaux t@TrueT = (False, t)
 evalaux t@FalseT = (False, t)
@@ -89,8 +90,8 @@ alala = do
 main :: IO ()
 main = return ()
 
---main = do
---    print $ tintid
+--main = print
+--    do $ tintid
 --    print $ gettype [] tintid
 --    print $ tintidid
 --    print $ gettype [] tintidid

@@ -19,6 +19,9 @@ data Term = Var VarName
           | TrueT
           | FalseT
           | If Term Term Term -- if Term then Term else Term
+          | Zero
+          | Succ Term
+          | Iszero Term
           deriving (Eq, Show)
 
 instance Show BaseType where
@@ -30,6 +33,7 @@ instance Show BaseType where
 --    show (Base t1 :-> t2) = show t1 ++ " → " ++ show t2
 --    show (t1 :-> t2) = "(" ++ show t1 ++ ")" ++ " → " ++ show t2
 
+-- TODO more cases
 prettyShow :: Term -> String
 prettyShow (Var v) = v
 prettyShow (Lam v _ t) = "λ" ++ v ++ "." ++ prettyShow t
