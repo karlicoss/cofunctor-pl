@@ -28,6 +28,9 @@ t6 = Let "x" (Var "z") (Let "y" (Var "w") (Var "q" `App` Var "x"))
 s7 = "\\x :: int -> (int -> bool) -> int.x"
 t7 = Lam "x" (Base MyInt :-> ((Base MyInt :-> Base MyBool) :-> Base MyInt)) (Var "x")
 
+s8 = "(\\x :: int. succ (succ x)) (succ (succ zero))"
+t8 = App (Lam "x" (Base MyInt) (Succ (Succ (Var "x")))) (Succ (Succ Zero))
+
 tests = [
          (s1, t1),
          (s2, t2),
@@ -35,7 +38,8 @@ tests = [
          (s4, t4),
          (s5, t5),
          (s6, t6),
-         (s7, t7)
+         (s7, t7),
+         (s8, t8)
         ]
 
 test = do

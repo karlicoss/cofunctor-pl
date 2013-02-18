@@ -66,6 +66,9 @@ o8 = TrueT
 i9 = (tor `App` (Iszero $ Succ Zero)) `App` (Iszero Zero)
 o9 = TrueT
 
+i10 = App (Lam "x" (Base MyInt) (Succ (Succ (Var "x")))) (Succ (Succ Zero))
+o10 = Succ $ Succ $ Succ $ Succ $ Zero
+
 testseval = [
              (i1, o1),
              (i2, o2),
@@ -75,7 +78,8 @@ testseval = [
              (i6, o6),
              (i7, o7),
              (i8, o8),
-             (i9, o9)
+             (i9, o9),
+             (i10, o10)
             ]
 
 testeval = \(i, (s, t)) -> let res = eval s

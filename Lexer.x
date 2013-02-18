@@ -20,6 +20,9 @@ tokens :-
   else                              { \s -> TokenElse }
   true                              { \s -> TokenTrue }
   false                             { \s -> TokenFalse }
+  zero                              { \s -> TokenZero }
+  succ                              { \s -> TokenSucc }
+  iszero                            { \s -> TokenIszero }
   \=                                { \s -> TokenAssignment }
   \\                                { \s -> TokenLambda }
   \.                                { \s -> TokenDot }
@@ -40,6 +43,9 @@ data Token = TokenLet
            | TokenElse
            | TokenTrue
            | TokenFalse
+           | TokenZero
+           | TokenSucc
+           | TokenIszero
            | TokenAssignment
            | TokenLambda
            | TokenDot
