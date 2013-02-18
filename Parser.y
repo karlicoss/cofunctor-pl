@@ -14,6 +14,11 @@ import Datatypes
     "in"     { TokenIn }
     "int"    { TokenTypeInt }
     "bool"   { TokenTypeBool }
+    "if"     { TokenIf }
+    "then"   { TokenThen }
+    "else"   { TokenElse }
+    "true"   { TokenTrue }
+    "false"  { TokenFalse }
     "="      { TokenAssignment }
     "\\"     { TokenLambda }
     "."      { TokenDot }
@@ -39,16 +44,22 @@ AppTerm1 : ATerm { [$1] }
          | ATerm AppTerm1 { $1 : $2 }
          | Lam { [$1] } -- is it supposed to be like that?
          | Let { [$1] }
+         | IfThenElse { [$1] }
 
 ATerm :: { Term }
 ATerm : "(" Term ")" { $2 }
       | "var" { Var $1 }
+      | "true" { TrueT }
+      | "false" { FalseT }
 
 Lam :: { Term }
 Lam : "\\" "var" "::" Type "." Term { Lam $2 $4 $6 }
 
 Let :: { Term }
 Let : "let" "var" "=" Term "in" Term { Let $2 $4 $6 }
+
+IfThenElse :: { Term }
+IfThenElse : "if" Term "then" Term "else" Term { If $2 $4 $6 }
 
 Type :: { Type } 
 Type : "int" { Base MyInt }

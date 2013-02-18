@@ -16,6 +16,9 @@ data Term = Var VarName
           | Lam VarName Type Term
           | App Term Term
           | Let VarName Term Term -- let Var = Term in Term
+          | TrueT
+          | FalseT
+          | If Term Term Term -- if Term then Term else Term
           deriving (Eq, Show)
 
 instance Show BaseType where

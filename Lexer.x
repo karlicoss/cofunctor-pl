@@ -15,6 +15,11 @@ tokens :-
   in                                { \s -> TokenIn  }
   int                               { \s -> TokenTypeInt }
   bool                              { \s -> TokenTypeBool }
+  if                                { \s -> TokenIf }
+  then                              { \s -> TokenThen }
+  else                              { \s -> TokenElse }
+  true                              { \s -> TokenTrue }
+  false                             { \s -> TokenFalse }
   \=                                { \s -> TokenAssignment }
   \\                                { \s -> TokenLambda }
   \.                                { \s -> TokenDot }
@@ -30,6 +35,11 @@ data Token = TokenLet
            | TokenIn
            | TokenTypeInt
            | TokenTypeBool
+           | TokenIf
+           | TokenThen
+           | TokenElse
+           | TokenTrue
+           | TokenFalse
            | TokenAssignment
            | TokenLambda
            | TokenDot
