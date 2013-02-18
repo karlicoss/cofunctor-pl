@@ -11,6 +11,15 @@ replins c (v, t) = case lookup v c of
                        Nothing -> (v, t) : c
 
 gettype :: Context -> Term -> Maybe Type
+gettype _ Zero = Just $ Base MyInt
+gettype c (Succ e) = do ety <- gettype c e
+                        if ety == Base MyInt
+                        then return $ Base MyInt
+                        else fail "int expected" 
+gettype c (Iszero e) = do ety <- gettype c e
+                          if ety == Base MyInt
+                          then return $ Base MyBool
+                          else fail "int expected"                         
 gettype _ TrueT = Just $ Base MyBool
 gettype _ FalseT = Just $ Base MyBool
 gettype c (If e th el) = do ety <- gettype c e

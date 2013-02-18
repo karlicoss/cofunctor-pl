@@ -37,6 +37,7 @@ tintid = genid (Base MyInt)
 tintidid = genid ((Base MyInt) :-> (Base MyInt))
 
 tand = Lam "x" (Base MyBool) $ Lam "y" (Base MyBool) $ If (Var "x") (If (Var "y") TrueT FalseT) FalseT
+tor = Lam "x" (Base MyBool) $ Lam "y" (Base MyBool) $ If (Var "x") TrueT (If (Var "y") TrueT FalseT)
 
 i1 = If TrueT FalseT TrueT
 o1 = FalseT
@@ -47,8 +48,8 @@ o2 = TrueT
 i3 = tintid
 o3 = tintid
 
-i4 = (tintidid `App` tintid) `App` (Var "x") -- TODO this test case did not typecheck, insert value instead of Var "x" later
-o4 = Var "x"
+i4 = (tintidid `App` tintid) `App` (Succ Zero) -- TODO this test case did not typecheck, insert value instead of Var "x" later
+o4 = Succ Zero
 
 i5 = (tand `App` FalseT) `App` FalseT
 o5 = FalseT
@@ -62,6 +63,8 @@ o7 = FalseT
 i8 = (tand `App` TrueT) `App` TrueT
 o8 = TrueT
 
+i9 = (tor `App` (Iszero $ Succ Zero)) `App` (Iszero Zero)
+o9 = TrueT
 
 testseval = [
              (i1, o1),
@@ -71,7 +74,8 @@ testseval = [
              (i5, o5),
              (i6, o6),
              (i7, o7),
-             (i8, o8)
+             (i8, o8),
+             (i9, o9)
             ]
 
 testeval = \(i, (s, t)) -> let res = eval s
