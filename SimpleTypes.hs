@@ -1,39 +1,12 @@
+module SimpleTypes where
+
 import Datatypes
+import TypeCheck (gettype)
 import Data.List (delete, union, (\\), find)
 import Data.Maybe (fromJust)
 import Debug.Trace (trace)
 import Lexer (alexScanTokens)
 import Parser (parser)
-
-type Context = [(VarName, Type)]
-
-replins :: Context -> (VarName, Type) -> Context
-replins c (v, t) = case lookup v c of
-                       Just t2 -> (v, t) : delete (v, t2) c
-                       Nothing -> (v, t) : c
-
-gettype :: Context -> Term -> Maybe Type
-gettype _ TrueT = Just $ Base MyBool
-gettype _ FalseT = Just $ Base MyBool
-gettype c (If e th el) = do ety <- gettype c e
-                            if ety == Base MyBool
-                            then do thty <- gettype c th
-                                    elty <- gettype c el
-                                    if thty == elty
-                                    then return thty
-                                    else fail "then/else clause type mismatch"
-                            else fail "if condition type is not boolean"
-gettype c t@(Var v) = lookup v c
-gettype c t@(Lam vn ty b) = do bty <- gettype (replins c (vn, ty)) b
-                               return (ty :-> bty)
-gettype c t@(t1 `App` t2) = do (l :-> r) <- gettype c t1
-                               t2ty <- gettype c t2
-                               if l == t2ty
-                                   then return r
-                                   else fail "application type mismatch"
-gettype c t@(Let v t1 t2) = do vt <- gettype c t1
-                               t2ty <- gettype (replins c (v, vt)) t2
-                               return t2ty
 
 free :: Term -> [VarName]
 free TrueT = []
@@ -102,52 +75,6 @@ eval :: Term -> Term
 eval t = let (b, et) = evalaux t
          in if b then eval et else t
 
-genid :: Type -> Term
-genid t = Lam "x" t (Var "x")
-
-runTest :: Term -> Term
-runTest t = eval t
-
-tintid = genid (Base MyInt)
-tintidid = genid ((Base MyInt) :-> (Base MyInt))
-
-
-i1 = If TrueT FalseT TrueT
-o1 = FalseT
-
-i2 = If (If FalseT TrueT FalseT) FalseT TrueT
-o2 = TrueT
-
-i3 = tintid
-o3 = tintid
-
-i4 = (tintidid `App` tintid) `App` (Var "x")
-o4 = Var "x"
-
-tests = [
-         (i1, o1),
-         (i2, o2),
-         (i3, o3),
-         (i4, o4)
-        ]
-
-test = do
-    let tst = \(i, (s, t)) -> let res = runTest s
-                              in if res == t
-                                 then putStrLn $ show i ++ " " ++ "OK"
-                                 else do putStrLn $ show i ++ " " ++ "ERROR"
-                                         putStrLn $ "Got: " ++ show res
-                                         putStrLn $ "Expected: " ++ show t
-    mapM_ tst (zip [1..] tests)
-
-
-
-term1 = (tintidid `App` tintid) `App` (Var "x")
-
-eterm1 = eval term1
-
-termlet = Let "x" tintid (tintidid `App` (Var "x"))
-
 alala = do
   s <- getLine
   let t = parser $ alexScanTokens s
@@ -159,7 +86,8 @@ alala = do
     Nothing -> do putStrLn $ "type error"
                   alala
 
-main = test
+main :: IO ()
+main = return ()
 
 --main = do
 --    print $ tintid
