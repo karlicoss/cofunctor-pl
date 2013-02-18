@@ -9,8 +9,10 @@ import Lexer (alexScanTokens)
 import Parser (parser)
 
 free :: Term -> [VarName]
+free (Fix e) = free e
 free Zero = []
 free (Succ e) = free e
+free (Pred e) = free e
 free (Iszero e) = free e
 free TrueT = []
 free FalseT = []
@@ -32,8 +34,10 @@ freshvar :: [VarName] -> VarName
 freshvar l = fromJust $ find (\x -> not $ x `elem` l) allvars
 
 rename :: VarName -> VarName -> Term -> Term
+rename v what t@(Fix e) = Fix $ rename v what e
 rename _ _ t@Zero = t
 rename v what t@(Succ t2) = Succ $ rename v what t2
+rename v what t@(Pred t2) = Pred $ rename v what t2
 rename v what t@(Iszero t2) = Iszero $ rename v what t2
 rename _ _ t@FalseT = t
 rename _ _ t@TrueT = t
@@ -44,8 +48,10 @@ rename v what t@(Lam v2 tp b) = if v == v2 then t else Lam v2 tp $ rename v what
 rename v what t@(Let v2 t1 t2) = if v == v2 then t else Let v2 (rename v what t1) (rename v what t2)
 
 subst :: VarName -> Term -> Term -> Term
+subst v what t@(Fix t2) = Fix $ subst v what t2
 subst _ _ t@Zero = t
 subst v what t@(Succ t2) = Succ $ subst v what t2
+subst v what t@(Pred t2) = Pred $ subst v what t2
 subst v what t@(Iszero t2) = Iszero $ subst v what t2
 subst _ _ t@FalseT = t
 subst _ _ t@TrueT = t
@@ -63,9 +69,14 @@ subst v what t@(Let v2 t1 t2) | v == v2                             = t
 
 -- TODO abstract reduction strategy
 evalaux :: Term -> (Bool, Term)
+evalaux t@(Fix t2) = (True, t2 `App` (Fix t2))
 evalaux t@Zero = (False, t)
 evalaux t@(Succ t2) = let (b, et2) = evalaux t2
                       in (b, Succ et2)
+evalaux t@(Pred Zero) = (True, Zero)
+evalaux r@(Pred (Succ t2)) = (True, t2)
+evalaux t@(Pred t2) = let (b, et2) = evalaux t2
+                      in (b, Pred et2)
 evalaux t@(Iszero Zero) = (True, TrueT)
 evalaux t@(Iszero (Succ _)) = (True, FalseT)
 evalaux t@(Iszero t2) = let (b, et2) = evalaux t2

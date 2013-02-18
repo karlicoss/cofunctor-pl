@@ -21,7 +21,9 @@ data Term = Var VarName
           | If Term Term Term -- if Term then Term else Term
           | Zero
           | Succ Term
+          | Pred Term
           | Iszero Term
+          | Fix Term
           deriving (Eq, Show)
 
 instance Show BaseType where
