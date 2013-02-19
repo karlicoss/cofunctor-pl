@@ -1,5 +1,5 @@
 {
-module Parser where
+module Parser (parser) where
 
 import Lexer
 import Datatypes
@@ -28,6 +28,7 @@ import Datatypes
     "("      { TokenOBracket }
     ")"      { TokenCBracket }
     "::"     { TokenDoubleColon }
+    ";"      { TokenSemiColon }
     "->"     { TokenArrow }
     "var"    { TokenVar $$ }
 
@@ -62,7 +63,12 @@ Lam :: { Term }
 Lam : "\\" "var" "::" Type "." Term { Lam $2 $4 $6 }
 
 Let :: { Term }
-Let : "let" "var" "=" Term "in" Term { Let $2 $4 $6 }
+Let : "let" LetList "in" Term { makeLet $2 $4 }
+
+LetList :: { [(VarName, Term)] }
+LetList : "var" "=" Term { [($1, $3)] }
+LetList : "var" "=" Term ";" LetList { ($1, $3) : $5 }
+
 
 IfThenElse :: { Term }
 IfThenElse : "if" Term "then" Term "else" Term { If $2 $4 $6 }
@@ -75,13 +81,19 @@ Type : "int" { Base MyInt }
 
 {
     
+makeLet :: [(VarName, Term)] -> Term -> Term
+makeLet [(x, y)] z = Let x y z
+makeLet ((x, y) : ls) z = Let x y $ makeLet ls z
+
 parseError :: [Token] -> a
 parseError tokens = error ("Parse error" ++ show tokens)
 
 
---main = do
---    s <- getContents
---    let parseTree = parser $ alexScanTokens s
---    print $ parseTree
+main' = do
+    s <- getContents
+    let parseTree = parser $ alexScanTokens s
+    print $ parseTree
+
+main = main'
 
 }

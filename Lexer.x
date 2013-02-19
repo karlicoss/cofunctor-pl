@@ -29,6 +29,7 @@ tokens :-
   \(                                { \s -> TokenOBracket }
   \)                                { \s -> TokenCBracket }
   \:\:                              { \s -> TokenDoubleColon }
+  \;                                { \s -> TokenSemiColon }
   \-\>                              { \s -> TokenArrow }
   $alpha [$alpha $digit \_ \']*     { \s -> TokenVar s} 
 
@@ -52,6 +53,7 @@ data Token = TokenLet
            | TokenOBracket
            | TokenCBracket
            | TokenDoubleColon
+           | TokenSemiColon
            | TokenArrow
            | TokenVar String
            deriving (Show)
