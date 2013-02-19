@@ -21,7 +21,9 @@ import Datatypes
     "false"  { TokenFalse }
     "zero"   { TokenZero }
     "succ"   { TokenSucc }
+    "pred"   { TokenPred }
     "iszero" { TokenIszero }
+    "fix"    { TokenFix }
     "="      { TokenAssignment }
     "\\"     { TokenLambda }
     "."      { TokenDot }
@@ -57,7 +59,9 @@ ATerm : "(" Term ")" { $2 }
       | "false" { FalseT }
       | "zero" { Zero }
       | "succ" ATerm { Succ $2 }
+      | "pred" ATerm { Pred $2 }
       | "iszero" ATerm { Iszero $2 }
+      | "fix" ATerm { Fix $2 }
 
 Lam :: { Term }
 Lam : "\\" "var" "::" Type "." Term { Lam $2 $4 $6 }

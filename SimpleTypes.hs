@@ -1,7 +1,7 @@
 module SimpleTypes where
 
 import Datatypes
-import TypeCheck (gettype)
+import TypeCheck (gettype, typecheck)
 import Data.List (delete, union, (\\), find)
 import Data.Maybe (fromJust)
 import Debug.Trace (trace)
@@ -104,18 +104,18 @@ eval t = let (b, et) = evalaux t
          in if b then eval et else t
 
 alala = do
-  s <- getLine
+  s <- getContents
   let t = parser $ alexScanTokens s
-  putStr $ show t ++ " :: "
-  case gettype [] t of
-    Just tp -> do putStrLn $ show tp
+  --putStrLn $ "DEBUG: " ++ show t
+  putStr $ prettyShowTerm t ++ " :: "
+  case typecheck t of
+    Just tp -> do putStrLn $ prettyShowType tp
                   let et = eval t
-                  putStrLn $ show et ++ " :: " ++ (show $ fromJust $ gettype [] et)
+                  putStrLn $ prettyShowTerm et ++ " :: " ++ (prettyShowType $ fromJust $ typecheck et)
     Nothing -> do putStrLn $ "type error"
-                  alala
 
 main :: IO ()
-main = return ()
+main = alala
 
 --main = print
 --    do $ tintid

@@ -22,7 +22,9 @@ tokens :-
   false                             { \s -> TokenFalse }
   zero                              { \s -> TokenZero }
   succ                              { \s -> TokenSucc }
+  pred                              { \s -> TokenPred }
   iszero                            { \s -> TokenIszero }
+  fix                               { \s -> TokenFix }
   \=                                { \s -> TokenAssignment }
   \\                                { \s -> TokenLambda }
   \.                                { \s -> TokenDot }
@@ -46,7 +48,9 @@ data Token = TokenLet
            | TokenFalse
            | TokenZero
            | TokenSucc
+           | TokenPred
            | TokenIszero
+           | TokenFix
            | TokenAssignment
            | TokenLambda
            | TokenDot

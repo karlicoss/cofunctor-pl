@@ -27,19 +27,29 @@ data Term = Var VarName
           deriving (Eq, Show)
 
 instance Show BaseType where
-    show MyBool = "B"
-    show MyInt = "I"
+    show MyBool = "bool"
+    show MyInt = "int"
 
---instance Show Type where
---    show (Base t1) = show t1
---    show (Base t1 :-> t2) = show t1 ++ " → " ++ show t2
---    show (t1 :-> t2) = "(" ++ show t1 ++ ")" ++ " → " ++ show t2
+prettyShowType :: Type -> String
+prettyShowType (Base t1) = show t1
+prettyShowType (Base t1 :-> t2) = show t1 ++ " → " ++ prettyShowType t2
+prettyShowType (t1 :-> t2) = "(" ++ prettyShowType t1 ++ ")" ++ " → " ++ prettyShowType t2
+
 
 -- TODO more cases
-prettyShow :: Term -> String
-prettyShow (Var v) = v
-prettyShow (Lam v _ t) = "λ" ++ v ++ "." ++ prettyShow t
-prettyShow (t1@(Lam _ _ _ ) `App` t2) = "(" ++ prettyShow t1 ++ ")" ++ " " ++ prettyShow t2
-prettyShow (t1 `App` (Var v)) = prettyShow t1 ++ " " ++ v
-prettyShow (t1 `App` t2) = prettyShow t1 ++ " (" ++ prettyShow t2 ++ ")"
-prettyShow (Let v t1 t2) = "let " ++ v ++ " = " ++ prettyShow t1 ++ " in " ++ prettyShow t2
+prettyShowTerm :: Term -> String
+prettyShowTerm (Var v) = v
+prettyShowTerm (Lam v _ t) = "λ" ++ v ++ "." ++ prettyShowTerm t
+prettyShowTerm (t1@(Lam _ _ _ ) `App` t2) = "(" ++ prettyShowTerm t1 ++ ")" ++ " " ++ prettyShowTerm t2
+prettyShowTerm (t1 `App` (Var v)) = prettyShowTerm t1 ++ " " ++ v
+prettyShowTerm (t1 `App` t2) = prettyShowTerm t1 ++ " (" ++ prettyShowTerm t2 ++ ")"
+prettyShowTerm (Let v t1 t2) = "let " ++ v ++ " = " ++ prettyShowTerm t1 ++ " in " ++ prettyShowTerm t2
+prettyShowTerm TrueT = "true"
+prettyShowTerm FalseT = "false"
+prettyShowTerm (If t1 t2 t3) = "if" ++ " " ++ prettyShowTerm t1 ++ " " ++ "then" ++ " " ++ prettyShowTerm t2 ++ " " ++ "else" ++ " " ++ prettyShowTerm t3
+prettyShowTerm Zero = "zero"
+prettyShowTerm (Succ e) = "succ" ++ " " ++ prettyShowTerm e
+prettyShowTerm (Pred e) = "pred" ++ " " ++ prettyShowTerm e
+prettyShowTerm (Iszero e) = "iszero" ++ " " ++ prettyShowTerm e
+prettyShowTerm (Fix e) = "fix" ++ " " ++ prettyShowTerm e
+
