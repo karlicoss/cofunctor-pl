@@ -46,7 +46,7 @@ fac = fix
     \fac::int -> int.
     \x::int.
         if (iszero x) then n1
-        else mul x (pred x)
+        else mul x (fac (pred x))
     )
 
-in fac n3
+in fac n4
