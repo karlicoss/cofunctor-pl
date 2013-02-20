@@ -9,6 +9,8 @@ import Lexer (alexScanTokens)
 import Parser (parser, Ex(..))
 
 free :: Term -> [VarName]
+free (UnpackTuple i t) = free t
+free (Tuple tl) = foldl union [] $ map free tl
 free (Fix e) = free e
 free Zero = []
 free (Succ e) = free e
@@ -34,6 +36,8 @@ freshvar :: [VarName] -> VarName
 freshvar l = fromJust $ find (\x -> not $ x `elem` l) allvars
 
 rename :: VarName -> VarName -> Term -> Term
+rename v what t@(UnpackTuple i t2) = UnpackTuple i $ rename v what t2
+rename v what t@(Tuple el) = Tuple $ map (rename v what) el
 rename v what t@(Fix e) = Fix $ rename v what e
 rename _ _ t@Zero = t
 rename v what t@(Succ t2) = Succ $ rename v what t2
@@ -48,6 +52,8 @@ rename v what t@(Lam v2 tp b) = if v == v2 then t else Lam v2 tp $ rename v what
 rename v what t@(Let v2 t1 t2) = if v == v2 then t else Let v2 (rename v what t1) (rename v what t2)
 
 subst :: VarName -> Term -> Term -> Term
+subst v what t@(UnpackTuple i t2) = UnpackTuple i $ subst v what t2
+subst v what t@(Tuple el) = Tuple $ map (subst v what) el
 subst v what t@(Fix t2) = Fix $ subst v what t2
 subst _ _ t@Zero = t
 subst v what t@(Succ t2) = Succ $ subst v what t2
@@ -69,6 +75,17 @@ subst v what t@(Let v2 t1 t2) | v == v2                             = t
 
 -- TODO abstract reduction strategy
 evalaux :: Term -> (Bool, Term)
+evalaux t@(UnpackTuple i (Tuple tl)) = (True, tl !! i)
+evalaux t@(UnpackTuple i t2) = let (b, et2) = evalaux t2
+                               in (b, UnpackTuple i et2)
+evalaux t@(Tuple tl) = let n = length tl
+                           el = map evalaux tl
+                           notel = takeWhile (not . fst) el
+                           ln = length notel
+                       in if ln == n
+                            then (False, t)
+                            else let ev = snd $ el !! ln
+                                 in (True, Tuple $ take ln tl ++ [ev] ++ drop (ln + 1) tl)  
 evalaux t@(Fix t2) = (True, t2 `App` (Fix t2))
 evalaux t@Zero = (False, t)
 evalaux t@(Succ t2) = let (b, et2) = evalaux t2

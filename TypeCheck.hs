@@ -11,6 +11,14 @@ replins c (v, t) = case lookup v c of
                        Nothing -> (v, t) : c
 
 gettype :: Context -> Term -> Maybe Type
+gettype c (UnpackTuple i t) = do tl <- gettype c t
+                                 case tl of
+                                     TypeProd tp -> if i < length tp
+                                                    then return $ tp !! i
+                                                    else fail "Tuple index out of range"
+                                     _           -> fail "Tuple type expected"
+gettype c (Tuple l) = do tl <- mapM (gettype c) l
+                         return $ TypeProd tl
 gettype c (Fix t) = do (l :-> r) <- gettype c t
                        if l == r
                        then return l

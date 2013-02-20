@@ -10,6 +10,7 @@ data BaseType = MyBool
 
 data Type = Base BaseType
           | Type :-> Type
+          | TypeProd [Type]
           deriving (Eq, Show)
 
 data Term = Var VarName
@@ -24,12 +25,15 @@ data Term = Var VarName
           | Pred Term
           | Iszero Term
           | Fix Term
+          | Tuple [Term]
+          | UnpackTuple Int Term
           deriving (Eq, Show)
 
 instance Show BaseType where
     show MyBool = "bool"
     show MyInt = "int"
 
+-- TODO more cases
 prettyShowType :: Type -> String
 prettyShowType (Base t1) = show t1
 prettyShowType (Base t1 :-> t2) = show t1 ++ " → " ++ prettyShowType t2
