@@ -47,6 +47,14 @@ fac = fix
     \x::int.
         if (iszero x) then n1
         else mul x (fac (pred x))
+    );
+
+mulpar = fix
+    (
+    \mulpar::int * int -> int.
+    \a :: int * int.
+        if iszero a#0 then n0
+        else add a#1 (mulpar <pred a#0, a#1>)
     )
 
 in fac n4

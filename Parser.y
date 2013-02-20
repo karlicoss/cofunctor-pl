@@ -44,11 +44,9 @@ import Debug.Trace (trace)
     "var"     { TokenVar $$ }
 
 %right "->"
-%left "#"
 %nonassoc "fix"
-%nonassoc "succ"
-%nonassoc "pred"
-%nonassoc "iszero"
+%nonassoc "succ" "pred" "iszero"
+%left "#"
 
 %%
 
@@ -143,7 +141,7 @@ makeLet [(x, y)] z = Let x y z
 makeLet ((x, y) : ls) z = Let x y $ makeLet ls z
 
 parseError :: [Token] -> Ex a
-parseError tokens = failEx "Parse error"
+parseError tokens = failEx $ "Parse error" ++ show tokens
 
 
 main' = do

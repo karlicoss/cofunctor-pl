@@ -124,6 +124,7 @@ alala = do
   s <- getContents
   case parser $ alexScanTokens s of
     Ok t -> do putStr $ prettyShowTerm t ++ " :: "
+               --utStr $ "DEBUG: " ++ show t 
                case typecheck t of
                  Just tp -> do putStrLn $ prettyShowType tp
                                let et = eval t

@@ -1,5 +1,7 @@
 module Datatypes where
 
+import Data.List (intercalate)
+
 type VarName = String
 
 type TypeName = String
@@ -38,6 +40,9 @@ prettyShowType :: Type -> String
 prettyShowType (Base t1) = show t1
 prettyShowType (Base t1 :-> t2) = show t1 ++ " → " ++ prettyShowType t2
 prettyShowType (t1 :-> t2) = "(" ++ prettyShowType t1 ++ ")" ++ " → " ++ prettyShowType t2
+prettyShowType (TypeProd []) = "@empty"
+prettyShowType (TypeProd [t]) = "@" ++ prettyShowType t
+prettyShowType (TypeProd tl) = intercalate "*" $ map prettyShowType tl
 
 
 -- TODO more cases
@@ -56,4 +61,6 @@ prettyShowTerm (Succ e) = "succ" ++ " " ++ prettyShowTerm e
 prettyShowTerm (Pred e) = "pred" ++ " " ++ prettyShowTerm e
 prettyShowTerm (Iszero e) = "iszero" ++ " " ++ prettyShowTerm e
 prettyShowTerm (Fix e) = "fix" ++ " " ++ prettyShowTerm e
+prettyShowTerm (Tuple el) = "<" ++ (intercalate ", " $ map prettyShowTerm el) ++ ">"
+prettyShowTerm (UnpackTuple i e) = prettyShowTerm e ++ "#" ++ show i
 
