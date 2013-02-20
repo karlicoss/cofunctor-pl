@@ -1,10 +1,12 @@
 {
-module Parser (parser) where
+module Parser (parser, Ex(..)) where
 
 import Lexer
 import Datatypes
+import Debug.Trace (trace)
 }
 
+%monad { Ex } { thenEx } { returnEx }
 %name parser
 %tokentype { Token }
 %error { parseError }
@@ -39,7 +41,7 @@ import Datatypes
 %%
 
 Term :: { Term }
-Term : AppTerm { $1 }
+Term : AppTerm { $1  }
      --| 
 
 AppTerm :: { Term }
@@ -84,13 +86,33 @@ Type : "int" { Base MyInt }
      | Type "->" Type { $1 :-> $3 }
 
 {
-    
+
+data Ex a = Ok a
+          | Fail String
+          deriving (Show, Eq)
+
+thenEx :: Ex a -> (a -> Ex b) -> Ex b
+m `thenEx` k = case m of
+                   Ok a -> k a
+                   Fail s -> Fail s
+
+returnEx :: a -> Ex a
+returnEx a = Ok a
+
+failEx :: String -> Ex a
+failEx s = Fail s
+
+catchEx :: Ex a -> (String -> Ex a) -> Ex a
+catchEx m k = case m of
+                  Ok a -> Ok a
+                  Fail s -> k s
+
 makeLet :: [(VarName, Term)] -> Term -> Term
 makeLet [(x, y)] z = Let x y z
 makeLet ((x, y) : ls) z = Let x y $ makeLet ls z
 
-parseError :: [Token] -> a
-parseError tokens = error ("Parse error" ++ show tokens)
+parseError :: [Token] -> Ex a
+parseError tokens = failEx "Parse error"
 
 
 main' = do

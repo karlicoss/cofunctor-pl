@@ -6,7 +6,7 @@ import Data.List (delete, union, (\\), find)
 import Data.Maybe (fromJust)
 import Debug.Trace (trace)
 import Lexer (alexScanTokens)
-import Parser (parser)
+import Parser (parser, Ex(..))
 
 free :: Term -> [VarName]
 free (Fix e) = free e
@@ -105,14 +105,14 @@ eval t = let (b, et) = evalaux t
 
 alala = do
   s <- getContents
-  let t = parser $ alexScanTokens s
-  --putStrLn $ "DEBUG: " ++ show t
-  putStr $ prettyShowTerm t ++ " :: "
-  case typecheck t of
-    Just tp -> do putStrLn $ prettyShowType tp
-                  let et = eval t
-                  putStrLn $ prettyShowTerm et ++ " :: " ++ (prettyShowType $ fromJust $ typecheck et)
-    Nothing -> do putStrLn $ "type error"
+  case parser $ alexScanTokens s of
+    Ok t -> do putStr $ prettyShowTerm t ++ " :: "
+               case typecheck t of
+                 Just tp -> do putStrLn $ prettyShowType tp
+                               let et = eval t
+                               putStrLn $ prettyShowTerm et ++ " :: " ++ (prettyShowType $ fromJust $ typecheck et)
+                 Nothing -> putStrLn $ "type error"
+    Fail s -> putStr $ "Parse error: " ++ s
 
 main :: IO ()
 main = alala
