@@ -25,9 +25,16 @@ tokens :-
   pred                              { \s -> TokenPred }
   iszero                            { \s -> TokenIszero }
   fix                               { \s -> TokenFix }
+  $digit+                           { \s -> TokenInteger (read s :: Int) }
+  \*                                { \s -> TokenAsterisk }
   \=                                { \s -> TokenAssignment }
   \\                                { \s -> TokenLambda }
+  \<                                { \s -> TokenLT }
+  \>                                { \s -> TokenGT }
+  \@                                { \s -> TokenAt }
+  \#                                { \s -> TokenSharp }   
   \.                                { \s -> TokenDot }
+  \,                                { \s -> TokenComma }
   \(                                { \s -> TokenOBracket }
   \)                                { \s -> TokenCBracket }
   \:\:                              { \s -> TokenDoubleColon }
@@ -51,8 +58,15 @@ data Token = TokenLet
            | TokenPred
            | TokenIszero
            | TokenFix
+           | TokenInteger Int
+           | TokenAsterisk
            | TokenAssignment
            | TokenLambda
+           | TokenAt
+           | TokenSharp
+           | TokenLT
+           | TokenGT
+           | TokenComma
            | TokenDot
            | TokenOBracket
            | TokenCBracket

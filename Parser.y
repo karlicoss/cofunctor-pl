@@ -12,31 +12,43 @@ import Debug.Trace (trace)
 %error { parseError }
 
 %token
-    "let"    { TokenLet }
-    "in"     { TokenIn }
-    "int"    { TokenTypeInt }
-    "bool"   { TokenTypeBool }
-    "if"     { TokenIf }
-    "then"   { TokenThen }
-    "else"   { TokenElse }
-    "true"   { TokenTrue }
-    "false"  { TokenFalse }
-    "zero"   { TokenZero }
-    "succ"   { TokenSucc }
-    "pred"   { TokenPred }
-    "iszero" { TokenIszero }
-    "fix"    { TokenFix }
-    "="      { TokenAssignment }
-    "\\"     { TokenLambda }
-    "."      { TokenDot }
-    "("      { TokenOBracket }
-    ")"      { TokenCBracket }
-    "::"     { TokenDoubleColon }
-    ";"      { TokenSemiColon }
-    "->"     { TokenArrow }
-    "var"    { TokenVar $$ }
+    "let"     { TokenLet }
+    "in"      { TokenIn }
+    "int"     { TokenTypeInt }
+    "bool"    { TokenTypeBool }
+    "if"      { TokenIf }
+    "then"    { TokenThen }
+    "else"    { TokenElse }
+    "true"    { TokenTrue }
+    "false"   { TokenFalse }
+    "zero"    { TokenZero }
+    "succ"    { TokenSucc }
+    "pred"    { TokenPred }
+    "iszero"  { TokenIszero }
+    "fix"     { TokenFix }
+    "integer" { TokenInteger $$ }
+    "*"       { TokenAsterisk }
+    "="       { TokenAssignment }
+    "\\"      { TokenLambda }
+    "@"       { TokenAt }
+    "#"       { TokenSharp }
+    "<"       { TokenLT }
+    ">"       { TokenGT }
+    "."       { TokenDot }
+    ","       { TokenComma }
+    "("       { TokenOBracket }
+    ")"       { TokenCBracket }
+    "::"      { TokenDoubleColon }
+    ";"       { TokenSemiColon }
+    "->"      { TokenArrow }
+    "var"     { TokenVar $$ }
 
 %right "->"
+%left "#"
+%nonassoc "fix"
+%nonassoc "succ"
+%nonassoc "pred"
+%nonassoc "iszero"
 
 %%
 
@@ -64,6 +76,8 @@ ATerm : "(" Term ")" { $2 }
       | "pred" ATerm { Pred $2 }
       | "iszero" ATerm { Iszero $2 }
       | "fix" ATerm { Fix $2 }
+      | Tuple { Tuple $1 }
+      | ATerm "#" "integer" { UnpackTuple $3 $1 }
 
 Lam :: { Term }
 Lam : "\\" "var" "::" Type "." Term { Lam $2 $4 $6 }
@@ -75,15 +89,32 @@ LetList :: { [(VarName, Term)] }
 LetList : "var" "=" Term { [($1, $3)] }
 LetList : "var" "=" Term ";" LetList { ($1, $3) : $5 }
 
+Tuple :: { [Term] }
+Tuple : "<" ">" { [] }
+      | "<" TupleTermList ">" { $2 } 
+
+TupleTermList :: { [Term] }
+TupleTermList : Term { [$1] }
+              | Term "," TupleTermList { $1 : $3 }
+
 
 IfThenElse :: { Term }
 IfThenElse : "if" Term "then" Term "else" Term { If $2 $4 $6 }
 
 Type :: { Type } 
-Type : "int" { Base MyInt }
-     | "bool" { Base MyBool }
-     | "(" Type ")" { $2 }
+Type : AType { $1 }
      | Type "->" Type { $1 :-> $3 }
+     | TypeProd { TypeProd $1 }
+
+AType :: { Type }
+AType : "int" { Base MyInt }
+      | "bool" { Base MyBool }
+      | "(" Type ")" { $2 }
+
+TypeProd :: { [Type] }
+TypeProd : "@" AType { [$2] }
+         | AType "*" AType { [$1, $3] }
+         | AType "*" TypeProd { $1 : $3 }
 
 {
 
