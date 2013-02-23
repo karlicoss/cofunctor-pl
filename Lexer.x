@@ -4,8 +4,10 @@ module Lexer where
 
 %wrapper "basic"
 
-$digit = 0-9
-$alpha = [a-zA-Z]
+$digit = [0-9]
+$lower = [a-z]
+$upper = [A-Z]
+$alpha = [a-zA-Z0-9\_]
 
 
 tokens :-
@@ -25,6 +27,7 @@ tokens :-
   pred                              { \s -> TokenPred }
   iszero                            { \s -> TokenIszero }
   fix                               { \s -> TokenFix }
+  type                              { \s -> TokenType }
   $digit+                           { \s -> TokenInteger (read s :: Int) }
   \*                                { \s -> TokenAsterisk }
   \=                                { \s -> TokenAssignment }
@@ -40,7 +43,9 @@ tokens :-
   \:\:                              { \s -> TokenDoubleColon }
   \;                                { \s -> TokenSemiColon }
   \-\>                              { \s -> TokenArrow }
-  $alpha [$alpha $digit \_ \']*     { \s -> TokenVar s} 
+  $upper [$alpha \']*               { \s -> TokenTypeVar s} 
+  $lower [$alpha \']*               { \s -> TokenVar s} 
+
 
 {
 
@@ -58,6 +63,7 @@ data Token = TokenLet
            | TokenPred
            | TokenIszero
            | TokenFix
+           | TokenType
            | TokenInteger Int
            | TokenAsterisk
            | TokenAssignment
@@ -74,6 +80,7 @@ data Token = TokenLet
            | TokenSemiColon
            | TokenArrow
            | TokenVar String
+           | TokenTypeVar String
            deriving (Show)
 
 --main = do

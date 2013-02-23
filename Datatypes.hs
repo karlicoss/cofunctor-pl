@@ -14,6 +14,7 @@ data Type = Base BaseType
           | Type :-> Type
           | TypeProd [Type]
           deriving (Eq, Show)
+-- | TypeDecl TypeName -- TODO what if we somehowe define type int = blahblahblah?
 
 data Term = Var VarName
           | Lam VarName Type Term
@@ -29,7 +30,10 @@ data Term = Var VarName
           | Fix Term
           | Tuple [Term]
           | UnpackTuple Int Term
+          | LetType TypeName Type Term
           deriving (Eq, Show)
+
+
 
 instance Show BaseType where
     show MyBool = "bool"

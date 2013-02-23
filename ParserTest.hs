@@ -16,8 +16,8 @@ t2 = Ok $ Var "x1" `App` Var "x2"
 s3 = "\\x::int->int.x"
 t3 = Ok $ Lam "x" (Base MyInt :-> Base MyInt) (Var "x")
 
-s4 = "let x = y5 z6 in A5"
-t4 = Ok $ Let "x" (Var "y5" `App` Var "z6") (Var "A5")
+s4 = "let x = y5 z6 in a5"
+t4 = Ok $ Let "x" (Var "y5" `App` Var "z6") (Var "a5")
 
 s5 = "x let x = z in let y = w in q"
 t5 = Ok $ Var "x" `App` Let "x" (Var "z") (Let "y" (Var "w") (Var "q"))

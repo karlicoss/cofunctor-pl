@@ -26,6 +26,7 @@ import Debug.Trace (trace)
     "pred"    { TokenPred }
     "iszero"  { TokenIszero }
     "fix"     { TokenFix }
+    "type"    { TokenType }
     "integer" { TokenInteger $$ }
     "*"       { TokenAsterisk }
     "="       { TokenAssignment }
@@ -42,6 +43,7 @@ import Debug.Trace (trace)
     ";"       { TokenSemiColon }
     "->"      { TokenArrow }
     "var"     { TokenVar $$ }
+    "typevar" { TokenTypeVar $$ }
 
 %right "->"
 %nonassoc "fix"
@@ -83,9 +85,11 @@ Lam : "\\" "var" "::" Type "." Term { Lam $2 $4 $6 }
 Let :: { Term }
 Let : "let" LetList "in" Term { makeLet $2 $4 }
 
-LetList :: { [(VarName, Term)] }
-LetList : "var" "=" Term { [($1, $3)] }
-LetList : "var" "=" Term ";" LetList { ($1, $3) : $5 }
+LetList :: { [Either (VarName, Term) (TypeName, Type)] }
+LetList : "var" "=" Term { [Left ($1, $3)] }
+        | "type" "typevar" "=" Type { [Right ($2, $4)] }
+        | "var" "=" Term ";" LetList { Left ($1, $3) : $5 }
+        | "type" "typevar" "=" Type ";" LetList { Right ($2, $4) : $6 }
 
 Tuple :: { [Term] }
 Tuple : "<" ">" { [] }
@@ -136,9 +140,11 @@ catchEx m k = case m of
                   Ok a -> Ok a
                   Fail s -> k s
 
-makeLet :: [(VarName, Term)] -> Term -> Term
-makeLet [(x, y)] z = Let x y z
-makeLet ((x, y) : ls) z = Let x y $ makeLet ls z
+makeLet :: [Either (VarName, Term) (TypeName, Type)] -> Term -> Term
+makeLet [Left (x, y)] z = Let x y z
+makeLet [Right (x, y)] z = LetType x y z
+makeLet (Left (x, y) : ls) z = Let x y $ makeLet ls z
+makeLet (Right (x, y): ls) z = LetType x y $ makeLet ls z
 
 parseError :: [Token] -> Ex a
 parseError tokens = failEx $ "Parse error" ++ show tokens
