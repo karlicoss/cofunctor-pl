@@ -50,7 +50,7 @@ contif False = fail "False"
 
 gettype :: Context -> TypeContext -> Term -> Maybe Type
 gettype c tc (LetType tn tp term) = do contif $ checktype tc tp                                       
-                                       trace "alalala" $ gettype c (replins tc (tn, tp)) term -- TODO use another replins or make it more abstract
+                                       gettype c (replins tc (tn, tp)) term -- TODO use another replins or make it more abstract
 gettype c tc (UnpackTuple i t) = do tp <- gettype c tc t
                                     (TypeProd tl) <- getbase tc tp
                                     if i < length tl

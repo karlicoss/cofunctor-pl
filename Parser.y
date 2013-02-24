@@ -14,8 +14,6 @@ import Debug.Trace (trace)
 %token
     "let"     { TokenLet }
     "in"      { TokenIn }
-    "int"     { TokenTypeInt }
-    "bool"    { TokenTypeBool }
     "if"      { TokenIf }
     "then"    { TokenThen }
     "else"    { TokenElse }
@@ -109,10 +107,8 @@ Type : AType { $1 }
      | TypeProd { TypeProd $1 }
 
 AType :: { Type }
-AType : "int" { Base MyInt }
-      | "bool" { Base MyBool }
-      | "(" Type ")" { $2 }
-      | "typevar" { TypeVar $1 }
+AType : "(" Type ")" { $2 }
+      | "typevar" { makeType $1 }
 
 TypeProd :: { [Type] }
 TypeProd : "@" AType { [$2] }
@@ -140,6 +136,12 @@ catchEx :: Ex a -> (String -> Ex a) -> Ex a
 catchEx m k = case m of
                   Ok a -> Ok a
                   Fail s -> k s
+
+-- checks if type name is a base type, returns the appropriate type
+makeType :: TypeName -> Type
+makeType "Int" = Base MyInt
+makeType "Bool" = Base MyBool
+makeType v = TypeVar v
 
 makeLet :: [Either (VarName, Term) (TypeName, Type)] -> Term -> Term
 makeLet [Left (x, y)] z = Let x y z

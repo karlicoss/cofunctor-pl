@@ -13,7 +13,7 @@ t1 = Ok $ Var "x"
 s2 = "x1 x2"
 t2 = Ok $ Var "x1" `App` Var "x2"
 
-s3 = "\\x::int->int.x"
+s3 = "\\x::Int->Int.x"
 t3 = Ok $ Lam "x" (Base MyInt :-> Base MyInt) (Var "x")
 
 s4 = "let x = y5 z6 in a5"
@@ -25,11 +25,17 @@ t5 = Ok $ Var "x" `App` Let "x" (Var "z") (Let "y" (Var "w") (Var "q"))
 s6 = "let x = z in let y = w in q x"
 t6 = Ok $ Let "x" (Var "z") (Let "y" (Var "w") (Var "q" `App` Var "x"))
 
-s7 = "\\x :: int -> (int -> bool) -> int.x"
+s7 = "\\x :: Int -> (Int -> Bool) -> Int.x"
 t7 = Ok $ Lam "x" (Base MyInt :-> ((Base MyInt :-> Base MyBool) :-> Base MyInt)) (Var "x")
 
-s8 = "(\\x :: int. succ (succ x)) (succ (succ zero))"
+s8 = "(\\x :: Int. succ (succ x)) (succ (succ zero))"
 t8 = Ok $ App (Lam "x" (Base MyInt) (Succ (Succ (Var "x")))) (Succ (Succ Zero))
+
+s9 = "\\x :: int. zero"
+t9 = Fail ""
+
+s10 = "\\x :: sadlald. zero"
+t10 = Fail ""
 
 tests = [
          (s1, t1),
@@ -39,12 +45,21 @@ tests = [
          (s5, t5),
          (s6, t6),
          (s7, t7),
-         (s8, t8)
+         (s8, t8),
+         (s9, t9),
+         (s10, t10)
         ]
+
+-- modifed Eq for Ex, treats all Fails as equal
+exeq :: (Eq a) => Ex a -> Ex a -> Bool
+exeq (Ok x) (Ok y) = x == y
+exeq (Ok _) (Fail _) = False
+exeq (Fail _) (Ok _) = False
+exeq (Fail _) (Fail _) = True
 
 test = do
     let tst = \(i, (s, t)) -> let res = runTest s
-                              in if res == t
+                              in if res `exeq` t
                                  then putStrLn $ show i ++ " " ++ "OK"
                                  else do putStrLn $ show i ++ " " ++ "ERROR"
                                          putStrLn $ "Got: " ++ show res

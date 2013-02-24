@@ -15,8 +15,6 @@ tokens :-
   $white+                           ;
   let                               { \s -> TokenLet }
   in                                { \s -> TokenIn  }
-  int                               { \s -> TokenTypeInt }
-  bool                              { \s -> TokenTypeBool }
   if                                { \s -> TokenIf }
   then                              { \s -> TokenThen }
   else                              { \s -> TokenElse }
@@ -51,8 +49,6 @@ tokens :-
 
 data Token = TokenLet
            | TokenIn
-           | TokenTypeInt
-           | TokenTypeBool
            | TokenIf
            | TokenThen
            | TokenElse
