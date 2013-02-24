@@ -112,6 +112,7 @@ AType :: { Type }
 AType : "int" { Base MyInt }
       | "bool" { Base MyBool }
       | "(" Type ")" { $2 }
+      | "typevar" { TypeVar $1 }
 
 TypeProd :: { [Type] }
 TypeProd : "@" AType { [$2] }

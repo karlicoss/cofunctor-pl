@@ -13,8 +13,9 @@ data BaseType = MyBool
 data Type = Base BaseType
           | Type :-> Type
           | TypeProd [Type]
+          | TypeVar TypeName
           deriving (Eq, Show)
--- | TypeDecl TypeName -- TODO what if we somehowe define type int = blahblahblah?
+-- |  TypeSyn TypeName Type -- TODO what if we somehow define type int = blahblahblah?
 
 data Term = Var VarName
           | Lam VarName Type Term
@@ -47,6 +48,7 @@ prettyShowType (t1 :-> t2) = "(" ++ prettyShowType t1 ++ ")" ++ " → " ++ prett
 prettyShowType (TypeProd []) = "@empty"
 prettyShowType (TypeProd [t]) = "@" ++ prettyShowType t
 prettyShowType (TypeProd tl) = intercalate "*" $ map prettyShowType tl
+prettyShowType (TypeVar tv) = tv
 
 
 -- TODO more cases
@@ -67,4 +69,4 @@ prettyShowTerm (Iszero e) = "iszero" ++ " " ++ prettyShowTerm e
 prettyShowTerm (Fix e) = "fix" ++ " " ++ prettyShowTerm e
 prettyShowTerm (Tuple el) = "<" ++ (intercalate ", " $ map prettyShowTerm el) ++ ">"
 prettyShowTerm (UnpackTuple i e) = prettyShowTerm e ++ "#" ++ show i
-
+prettyShowTerm (LetType v tp term) = "let type " ++ v ++ " = " ++ prettyShowType tp ++ " in " ++ prettyShowTerm term

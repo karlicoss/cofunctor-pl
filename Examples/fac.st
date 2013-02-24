@@ -41,18 +41,24 @@ mul = fix
         else add y (mul (pred x) y)
     );
 
+type Fint = int -> int;
+
 fac = fix
     (
-    \fac::int -> int.
+    \fac::Fint.
     \x::int.
         if (iszero x) then n1
         else mul x (fac (pred x))
     );
 
+type IntP = int * int;
+
+alala = \x :: IntP.zero;
+
 mulpar = fix
     (
-    \mulpar::int * int -> int.
-    \a :: int * int.
+    \mulpar::IntP -> int.
+    \a :: IntP.
         if iszero a#0 then n0
         else add a#1 (mulpar <pred a#0, a#1>)
     )

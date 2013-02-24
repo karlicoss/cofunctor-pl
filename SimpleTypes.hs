@@ -23,6 +23,7 @@ free (Var v) = [v]
 free (t1 `App` t2) = free t1 `union` free t2
 free (Lam v _ b) = delete v $ free b
 free (Let v t1 t2) = delete v $ (free t1 `union` free t2)
+free (LetType v tp term) = free term
 
 char2str = \c -> [c]
 
@@ -50,6 +51,7 @@ rename v what t@(Var v2) = if v == v2 then Var what else t
 rename v what t@(t1 `App` t2) = (rename v what t1) `App` (rename v what t2)
 rename v what t@(Lam v2 tp b) = if v == v2 then t else Lam v2 tp $ rename v what b
 rename v what t@(Let v2 t1 t2) = if v == v2 then t else Let v2 (rename v what t1) (rename v what t2)
+rename v what t@(LetType v2 tp term) = LetType v2 tp $ rename v what term
 
 subst :: VarName -> Term -> Term -> Term
 subst v what t@(UnpackTuple i t2) = UnpackTuple i $ subst v what t2
@@ -72,6 +74,7 @@ subst v what t@(Let v2 t1 t2) | v == v2                             = t
                               | v /= v2 && v2 `notElem` (free what) = Let v2 (subst v what t1) (subst v what t2)
                               | otherwise                           = let fv = freshvar (v2 : free what `union` free t1 `union` free t2)
                                                                       in Let fv (subst v what (rename v2 fv t1)) (subst v what (rename v2 fv t2))
+subst v what t@(LetType v2 tp term) = LetType v2 tp $ subst v what term
 
 -- TODO abstract reduction strategy
 evalaux :: Term -> (Bool, Term)
@@ -115,6 +118,7 @@ evalaux t@(t1 `App` t2) = let (b1, et1) = evalaux t1
                              else if b2
                                   then (True, t1 `App` et2)
                                   else (False, t)
+evalaux t@(LetType v tp term) = (True, term) -- TODO i should definitely erase types
 
 eval :: Term -> Term
 eval t = let (b, et) = evalaux t
@@ -123,8 +127,8 @@ eval t = let (b, et) = evalaux t
 alala = do
   s <- getContents
   case parser $ alexScanTokens s of
-    Ok t -> do putStr $ prettyShowTerm t ++ " :: "
-               --utStr $ "DEBUG: " ++ show t 
+    Ok t -> do -- putStr $ "DEBUG: " ++ show t 
+               putStr $ prettyShowTerm t ++ " :: "
                case typecheck t of
                  Just tp -> do putStrLn $ prettyShowType tp
                                let et = eval t
