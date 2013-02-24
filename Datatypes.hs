@@ -13,6 +13,7 @@ data BaseType = MyBool
 data Type = Base BaseType
           | Type :-> Type
           | TypeProd [Type]
+          | TypeSum [Type]
           | TypeVar TypeName
           deriving (Eq, Show)
 -- |  TypeSyn TypeName Type -- TODO what if we somehow define type int = blahblahblah?
@@ -31,24 +32,29 @@ data Term = Var VarName
           | Fix Term
           | Tuple [Term]
           | UnpackTuple Int Term
+          | Inject Int Term Type -- inj_Int Term as Type
+          | Case Term [(VarName, Term)] -- case t of bind1 -> expr1, bind2 -> expr2, ... bindn -> exprn;
           | LetType TypeName Type Term
           deriving (Eq, Show)
 
 
 
 instance Show BaseType where
-    show MyBool = "bool"
-    show MyInt = "int"
+    show MyBool = "Bool"
+    show MyInt = "Int"
 
 -- TODO more cases
 prettyShowType :: Type -> String
 prettyShowType (Base t1) = show t1
 prettyShowType (Base t1 :-> t2) = show t1 ++ " → " ++ prettyShowType t2
 prettyShowType (t1 :-> t2) = "(" ++ prettyShowType t1 ++ ")" ++ " → " ++ prettyShowType t2
-prettyShowType (TypeProd []) = "@empty"
-prettyShowType (TypeProd [t]) = "@" ++ prettyShowType t
+prettyShowType (TypeProd []) = "(* *)"
+prettyShowType (TypeProd [t]) = "(* " ++ prettyShowType t ++ " *)"
 prettyShowType (TypeProd tl) = intercalate "*" $ map prettyShowType tl
 prettyShowType (TypeVar tv) = tv
+prettyShowType (TypeSum []) = "(+ +)"
+prettyShowType (TypeSum [t]) = "(+ " ++ prettyShowType t ++ " +)"
+prettyShowType (TypeSum tl) = "(" ++ (intercalate "+" $ map prettyShowType tl) ++ ")" -- TODO more cases to avoid redundant parenthesis
 
 
 -- TODO more cases
@@ -70,3 +76,5 @@ prettyShowTerm (Fix e) = "fix" ++ " " ++ prettyShowTerm e
 prettyShowTerm (Tuple el) = "<" ++ (intercalate ", " $ map prettyShowTerm el) ++ ">"
 prettyShowTerm (UnpackTuple i e) = prettyShowTerm e ++ "#" ++ show i
 prettyShowTerm (LetType v tp term) = "let type " ++ v ++ " = " ++ prettyShowType tp ++ " in " ++ prettyShowTerm term
+prettyShowTerm t@(Case term cl) = show t -- TODO
+prettyShowTerm t@(Inject i term tp) = show t -- TODO

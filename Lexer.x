@@ -26,19 +26,31 @@ tokens :-
   iszero                            { \s -> TokenIszero }
   fix                               { \s -> TokenFix }
   type                              { \s -> TokenType }
+  case                              { \s -> TokenCase }
+  inj                               { \s -> TokenInj }
+  as                                { \s -> TokenAs }
   $digit+                           { \s -> TokenInteger (read s :: Int) }
+  \(\*                              { \s -> TokenOABracket }
+  \*\)                              { \s -> TokenCABracket }
+  \(\+                              { \s -> TokenOPBracket }
+  \+\)                              { \s -> TokenCPBracket }
+  \(                                { \s -> TokenOBracket }
+  \)                                { \s -> TokenCBracket }
+  \{                                { \s -> TokenOCBracket }
+  \}                                { \s -> TokenCCBracket }
+  \+                                { \s -> TokenPlus }
   \*                                { \s -> TokenAsterisk }
   \=                                { \s -> TokenAssignment }
   \\                                { \s -> TokenLambda }
   \<                                { \s -> TokenLT }
   \>                                { \s -> TokenGT }
+  \$                                { \s -> TokenDollar }
   \@                                { \s -> TokenAt }
   \#                                { \s -> TokenSharp }   
   \.                                { \s -> TokenDot }
   \,                                { \s -> TokenComma }
-  \(                                { \s -> TokenOBracket }
-  \)                                { \s -> TokenCBracket }
   \:\:                              { \s -> TokenDoubleColon }
+  \:                                { \s -> TokenColon }
   \;                                { \s -> TokenSemiColon }
   \-\>                              { \s -> TokenArrow }
   $upper [$alpha \']*               { \s -> TokenTypeVar s} 
@@ -60,19 +72,31 @@ data Token = TokenLet
            | TokenIszero
            | TokenFix
            | TokenType
+           | TokenCase
+           | TokenInj
+           | TokenAs
            | TokenInteger Int
+           | TokenOABracket
+           | TokenCABracket
+           | TokenOPBracket
+           | TokenCPBracket
+           | TokenOBracket
+           | TokenCBracket
+           | TokenOCBracket
+           | TokenCCBracket
+           | TokenPlus
            | TokenAsterisk
            | TokenAssignment
            | TokenLambda
+           | TokenDollar
            | TokenAt
            | TokenSharp
            | TokenLT
            | TokenGT
            | TokenComma
            | TokenDot
-           | TokenOBracket
-           | TokenCBracket
            | TokenDoubleColon
+           | TokenColon
            | TokenSemiColon
            | TokenArrow
            | TokenVar String

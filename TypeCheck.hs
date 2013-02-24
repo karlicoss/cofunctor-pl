@@ -18,13 +18,20 @@ arecompatible :: TypeContext -> Type -> Type -> Bool
 arecompatible _ (Base t1) (Base t2) = t1 == t2
 arecompatible _ (Base _) (_ :-> _) = False
 arecompatible _ (Base _) (TypeProd _) = False
+arecompatible _ (Base _) (TypeSum _) = False
 arecompatible tc t1@(_ :-> _) t2@(Base _) = arecompatible tc t2 t1 -- symmetry                                              
 arecompatible tc (t1 :-> t2) (t3 :-> t4) = arecompatible tc t1 t3 && arecompatible tc t1 t3
 arecompatible tc (_ :-> _) (TypeProd _) = False
+arecompatible tc (_ :-> _) (TypeSum _) = False
 arecompatible tc t1@(TypeProd _) t2@(Base _) = arecompatible tc t2 t1 -- symmmetry
 arecompatible tc t1@(TypeProd _) t2@(_ :-> _) = arecompatible tc t2 t1 -- symmetry
 arecompatible tc (TypeProd tl1) (TypeProd tl2) = (length tl1 == length tl2) && (and $ map (\(x, y) -> arecompatible tc x y) $ zip tl1 tl2)
-arecompatible _ (TypeVar tv) (TypeVar tv2) = True -- TODO not sure about this
+arecompatible _ (TypeProd _) (TypeSum _) = False
+arecompatible tc t1@(TypeSum _) t2@(Base _) = arecompatible tc t2 t1 -- symmetry
+arecompatible tc t1@(TypeSum _) t2@(_ :-> _) = arecompatible tc t2 t1 -- symmetry
+arecompatible tc t1@(TypeSum _) t2@(TypeProd _) = arecompatible tc t2 t1 -- symmetry
+arecompatible tc t1@(TypeSum tl1) t2@(TypeSum tl2) = (length tl1 == length tl2) && (and $ map (\(x, y) -> arecompatible tc x y) $ zip tl1 tl2)
+arecompatible _ (TypeVar tv) (TypeVar tv2) = True -- TODO not sure about this TODO maybe check tv is in typing context
 arecompatible tc (TypeVar tv) t = case lookup tv tc of
                                       Just t2 -> arecompatible tc t2 t
                                       Nothing -> False
@@ -41,6 +48,7 @@ checktype :: TypeContext -> Type -> Bool
 checktype tc t@(Base _) = True
 checktype tc t@(x :-> y) = checktype tc x && checktype tc y
 checktype tc t@(TypeProd tl) = and $ map (checktype tc) tl
+checktype tc t@(TypeSum tl) = and $ map (checktype tc) tl
 checktype tc t@(TypeVar tv) = isJust $ lookup tv tc
 
 -- continues execution if its arguent is true, otherwise fails
@@ -49,6 +57,21 @@ contif True = return ()
 contif False = fail "False"
 
 gettype :: Context -> TypeContext -> Term -> Maybe Type
+gettype c tc (Case t cl) = do tp <- gettype c tc t
+                              (TypeSum tl) <- getbase tc tp
+                              contif $ length cl == length tl
+                              let aaa (vtp, (v, term)) = gettype (replins c (v, vtp)) tc term
+                              ctl <- mapM aaa (zip tl cl)
+                              contif $ and $ map (arecompatible tc (head ctl)) ctl
+                              return $ head ctl -- What should we do if sum is empty?
+gettype c tc (Inject i t tp) = do contif $ checktype tc tp
+                                  (TypeSum tl) <- getbase tc tp
+                                  ttp <- gettype c tc t
+                                  if i < length tl
+                                    then if arecompatible tc ttp (tl !! i)
+                                           then return tp
+                                           else fail "Bad inject type"
+                                    else fail "Injecting out of range"
 gettype c tc (LetType tn tp term) = do contif $ checktype tc tp                                       
                                        gettype c (replins tc (tn, tp)) term -- TODO use another replins or make it more abstract
 gettype c tc (UnpackTuple i t) = do tp <- gettype c tc t

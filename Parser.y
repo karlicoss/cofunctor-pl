@@ -25,7 +25,19 @@ import Debug.Trace (trace)
     "iszero"  { TokenIszero }
     "fix"     { TokenFix }
     "type"    { TokenType }
+    "case"    { TokenCase }
+    "inj"     { TokenInj }
+    "as"      { TokenAs }
     "integer" { TokenInteger $$ }
+    "(*"      { TokenOABracket }
+    "*)"      { TokenCABracket }
+    "(+"      { TokenOPBracket }
+    "+)"      { TokenCPBracket }
+    "("       { TokenOBracket }
+    ")"       { TokenCBracket }
+    "{"       { TokenOCBracket }
+    "}"       { TokenCCBracket }
+    "+"       { TokenPlus }
     "*"       { TokenAsterisk }
     "="       { TokenAssignment }
     "\\"      { TokenLambda }
@@ -35,15 +47,13 @@ import Debug.Trace (trace)
     ">"       { TokenGT }
     "."       { TokenDot }
     ","       { TokenComma }
-    "("       { TokenOBracket }
-    ")"       { TokenCBracket }
     "::"      { TokenDoubleColon }
+    ":"       { TokenColon }
     ";"       { TokenSemiColon }
     "->"      { TokenArrow }
     "var"     { TokenVar $$ }
     "typevar" { TokenTypeVar $$ }
 
-%right "->"
 %nonassoc "fix"
 %nonassoc "succ" "pred" "iszero"
 %left "#"
@@ -76,6 +86,8 @@ ATerm : "(" Term ")" { $2 }
       | "fix" ATerm { Fix $2 }
       | Tuple { Tuple $1 }
       | ATerm "#" "integer" { UnpackTuple $3 $1 }
+      | Case { $1 }
+      | SumInjection { $1 }
 
 Lam :: { Term }
 Lam : "\\" "var" "::" Type "." Term { Lam $2 $4 $6 }
@@ -101,19 +113,44 @@ TupleTermList : Term { [$1] }
 IfThenElse :: { Term }
 IfThenElse : "if" Term "then" Term "else" Term { If $2 $4 $6 }
 
+SumInjection :: { Term }
+SumInjection : "inj" Term "as" Type "@" "integer" { Inject $6 $2 $4 }
+
+Case :: { Term }
+Case : "case" Term "{" CaseList "}" { Case $2 $4 }
+
+CaseList :: { [(VarName, Term)] }
+CaseList : "var" ":" Term { [($1, $3)] }
+         | "var" ":" Term ";" CaseList { ($1, $3) : $5 }
+
 Type :: { Type } 
-Type : AType { $1 }
-     | Type "->" Type { $1 :-> $3 }
-     | TypeProd { TypeProd $1 }
+Type : TypeSum { $1 }
+
+TypeSum :: { Type }
+TypeSum : TypeArrow { $1 }
+        | TypeSumList { TypeSum $1 }
+
+TypeSumList :: { [Type] }
+TypeSumList : "(+" "+)" { [] }
+            | "(+" Type "+)" { [$2] }
+            | TypeArrow "+" TypeSumList { $1 : $3 }
+
+TypeArrow :: { Type }
+TypeArrow : TypeProd { $1 }
+          | TypeProd "->" TypeArrow { $1 :-> $3 }
+
+TypeProd :: { Type }
+TypeProd : AType { $1 }
+         | TypeProdList { TypeProd $1 }
+
+TypeProdList :: { [Type] }
+TypeProdList : "(*" "*)" { [] }
+             | "(*" Type "*)" { [$2] }
+             | AType "*" TypeProdList { $1 : $3 }
 
 AType :: { Type }
 AType : "(" Type ")" { $2 }
       | "typevar" { makeType $1 }
-
-TypeProd :: { [Type] }
-TypeProd : "@" AType { [$2] }
-         | AType "*" AType { [$1, $3] }
-         | AType "*" TypeProd { $1 : $3 }
 
 {
 
