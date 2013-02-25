@@ -24,6 +24,8 @@ free (t1 `App` t2) = free t1 `union` free t2
 free (Lam v _ b) = delete v $ free b
 free (Let v t1 t2) = delete v $ (free t1 `union` free t2)
 free (LetType v tp term) = free term
+free (Inject i term tp) = free term
+free (Case term cl) = free term `union` (foldl union [] $ (map (\(x, y) -> delete x $ free y) cl)) 
 
 char2str = \c -> [c]
 
@@ -52,6 +54,8 @@ rename v what t@(t1 `App` t2) = (rename v what t1) `App` (rename v what t2)
 rename v what t@(Lam v2 tp b) = if v == v2 then t else Lam v2 tp $ rename v what b
 rename v what t@(Let v2 t1 t2) = if v == v2 then t else Let v2 (rename v what t1) (rename v what t2)
 rename v what t@(LetType v2 tp term) = LetType v2 tp $ rename v what term
+rename v what t@(Inject i term tp) = Inject i (rename v what term) tp
+rename v what t@(Case term cl) = Case (rename v what term) $ map (\(x, y) -> (x, if x == v then y else rename v what y)) cl
 
 subst :: VarName -> Term -> Term -> Term
 subst v what t@(UnpackTuple i t2) = UnpackTuple i $ subst v what t2
@@ -75,6 +79,12 @@ subst v what t@(Let v2 t1 t2) | v == v2                             = t
                               | otherwise                           = let fv = freshvar (v2 : free what `union` free t1 `union` free t2)
                                                                       in Let fv (subst v what (rename v2 fv t1)) (subst v what (rename v2 fv t2))
 subst v what t@(LetType v2 tp term) = LetType v2 tp $ subst v what term
+subst v what t@(Inject i term tp) = Inject i (subst v what term) tp
+subst v what t@(Case term cl) = Case (subst v what term) $ map helper cl where
+  helper (x, y) | v == x                            = (x, y)
+                | v /= x && x `notElem` (free what) = (x, subst v what y)
+                | otherwise                         = let fv = freshvar (x : free what `union` free y)
+                                                      in (fv, subst v what $ rename x fv y)
 
 -- TODO abstract reduction strategy
 evalaux :: Term -> (Bool, Term)
@@ -114,11 +124,16 @@ evalaux ((Lam v _ b) `App` t2) = (True, subst v t2 b)
 evalaux t@(t1 `App` t2) = let (b1, et1) = evalaux t1
                               (b2, et2) = evalaux t2
                           in if b1
-                             then (True, et1 `App` t2)
-                             else if b2
-                                  then (True, t1 `App` et2)
-                                  else (False, t)
+                               then (True, et1 `App` t2)
+                               else if b2
+                                      then (True, t1 `App` et2)
+                                      else (False, t)
 evalaux t@(LetType v tp term) = (True, term) -- TODO i should definitely erase types
+evalaux t@(Inject i term tp) = let (b, eterm) = evalaux term
+                               in (b, Inject i eterm tp)
+evalaux t@(Case (Inject i term tp) cl) = (True, subst (fst $ cl !! i) term (snd $ cl !! i))
+evalaux t@(Case term cl) = let (b, eterm) = evalaux term
+                           in (b, Case eterm cl)
 
 eval :: Term -> Term
 eval t = let (b, et) = evalaux t
