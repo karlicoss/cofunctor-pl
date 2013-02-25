@@ -61,8 +61,7 @@ import Debug.Trace (trace)
 %%
 
 Term :: { Term }
-Term : AppTerm { $1  }
-     --| 
+Term : AppTerm { $1 } 
 
 AppTerm :: { Term }
 AppTerm : AppTerm1 { foldl App (head $1) (tail $1) } -- application is left associative

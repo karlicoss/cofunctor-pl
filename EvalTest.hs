@@ -75,7 +75,7 @@ o2 = TrueT
 i3 = tintid
 o3 = tintid
 
-i4 = (tintidid `App` tintid) `App` (Succ Zero) -- TODO this test case did not typecheck, insert value instead of Var "x" later
+i4 = (tintidid `App` tintid) `App` (Succ Zero)
 o4 = Succ Zero
 
 i5 = tand FalseT FalseT
