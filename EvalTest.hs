@@ -120,6 +120,12 @@ o17 = makenumber 12
 i18 = tfac $ makenumber 3
 o18 = makenumber 6
 
+i19 = LetType "Integer" (TypeSum [Base MyInt,Base MyInt]) (Let "adds" (Lam "x" (TypeVar "Integer") (Case (Var "x") [("pos",TrueT),("neg",FalseT)])) (App (Var "adds") (Inject 1 Zero (TypeVar "Integer"))))
+o19 = FalseT
+
+i20 = LetType "Integer" (TypeSum [Base MyInt]) (Let "mi" (Inject 0 Zero (TypeVar "Integer")) (Var "mi"))
+o20 = Inject 0 Zero (TypeSum [Base MyInt] ) -- !!! Problem with comparing typevar types and non-typevar
+
 testseval = [
              (i1, o1),
              (i2, o2),
@@ -138,7 +144,9 @@ testseval = [
              (i15, o15),
              (i16, o16),
              (i17, o17),
-             (i18, o18)
+             (i18, o18),
+             (i19, o19),
+             (i20, o20)
             ]
 
 testeval = \(i, (s, t)) -> let res = eval s

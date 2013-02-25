@@ -23,13 +23,17 @@ o5 = Nothing
 i6 = (LetType "Fint" (Base MyInt :-> Base MyInt) (Let "fac" (Fix (Lam "fac" (TypeVar "Fint") (Lam "x" (Base MyInt) Zero))) (App (Var "fac") Zero)), [], [])
 o6 = Just $ Base MyInt
 
+i7 = (LetType "A" (Base MyInt) (Let "ida" (Lam "x" (TypeVar "A") (Var "x")) (App (Var "ida") Zero)), [], [])
+o7 = Just $ Base MyInt
+
 testsgettype = [
                   (i1, o1),
                   (i2, o2),
                   (i3, o3),
                   (i4, o4),
                   (i5, o5),
-                  (i6, o6)
+                  (i6, o6),
+                  (i7, o7)
                ]
 
 

@@ -37,6 +37,25 @@ t9 = Fail ""
 s10 = "\\x :: sadlald. zero"
 t10 = Fail ""
 
+s11 = "let type MaybeInt = Int + Int in zero"
+t11 = Ok $ LetType "MaybeInt" (TypeSum [Base MyInt, Base MyInt]) Zero
+
+s12 = "let type MaybeInt = Int + Int * Bool + Bool -> Bool in zero"
+t12 = Ok $ (LetType "MaybeInt" (TypeSum [Base MyInt, TypeProd [Base MyInt, Base MyBool], Base MyBool :-> Base MyBool]) Zero)
+
+s13 = "let type MaybeInt = Int -> Int * Bool -> Bool * Int -> Bool in zero"
+t13 = Ok $ (LetType "MaybeInt" (Base MyInt :-> (TypeProd [Base MyInt, Base MyBool] :-> (TypeProd [Base MyBool, Base MyInt] :-> Base MyBool))) Zero)
+
+s14 = "let \
+\ type Integer = Int + Int; \
+\ adds = \\x::Integer.\\ \ 
+\    case x { \
+\        pos : true; \
+\        neg : false \
+\    } \
+\ in adds (inj zero as Integer@1)"
+t14 = Ok $ LetType "Integer" (TypeSum [Base MyInt,Base MyInt]) (Let "adds" (Lam "x" (TypeVar "Integer") (Case (Var "x") [("pos",TrueT),("neg",FalseT)])) (App (Var "adds") (Inject 1 Zero (TypeVar "Integer"))))
+
 tests = [
          (s1, t1),
          (s2, t2),
@@ -47,7 +66,10 @@ tests = [
          (s7, t7),
          (s8, t8),
          (s9, t9),
-         (s10, t10)
+         (s10, t10),
+         (s11, t11),
+         (s12, t12),
+         (s13, t13)
         ]
 
 -- modifed Eq for Ex, treats all Fails as equal

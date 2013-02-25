@@ -127,12 +127,12 @@ Type :: { Type }
 Type : TypeSum { $1 }
 
 TypeSum :: { Type }
-TypeSum : TypeArrow { $1 }
-        | TypeSumList { TypeSum $1 }
+TypeSum : TypeSumList { if length $1 == 1 then head $1 else TypeSum $1 }
+        | "(+" "+)" { TypeSum [] }
+        | "(+" Type "+)" { TypeSum [$2] }
 
 TypeSumList :: { [Type] }
-TypeSumList : "(+" "+)" { [] }
-            | "(+" Type "+)" { [$2] }
+TypeSumList : TypeArrow { [$1] }
             | TypeArrow "+" TypeSumList { $1 : $3 }
 
 TypeArrow :: { Type }
@@ -140,12 +140,12 @@ TypeArrow : TypeProd { $1 }
           | TypeProd "->" TypeArrow { $1 :-> $3 }
 
 TypeProd :: { Type }
-TypeProd : AType { $1 }
-         | TypeProdList { TypeProd $1 }
+TypeProd : TypeProdList { if length $1 == 1 then head $1 else TypeProd $1 }
+         | "(*" "*)" { TypeProd [] }
+         | "(*" Type "*)" { TypeProd [$2] }
 
 TypeProdList :: { [Type] }
-TypeProdList : "(*" "*)" { [] }
-             | "(*" Type "*)" { [$2] }
+TypeProdList : AType { [$1] }
              | AType "*" TypeProdList { $1 : $3 }
 
 AType :: { Type }
@@ -192,7 +192,9 @@ parseError tokens = failEx $ "Parse error" ++ show tokens
 
 main' = do
     s <- getContents
-    let parseTree = parser $ alexScanTokens s
+    let tokens = alexScanTokens s
+    print $ tokens
+    let parseTree = parser tokens
     print $ parseTree
 
 main = main'

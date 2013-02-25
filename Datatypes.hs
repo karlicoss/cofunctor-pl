@@ -8,7 +8,7 @@ type TypeName = String
 
 data BaseType = MyBool
               | MyInt
-              deriving (Eq)
+              deriving (Eq, Show)
 
 data Type = Base BaseType
           | Type :-> Type
@@ -37,11 +37,6 @@ data Term = Var VarName
           | LetType TypeName Type Term
           deriving (Eq, Show)
 
-
-
-instance Show BaseType where
-    show MyBool = "Bool"
-    show MyInt = "Int"
 
 -- TODO more cases
 prettyShowType :: Type -> String

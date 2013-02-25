@@ -128,7 +128,8 @@ evalaux t@(t1 `App` t2) = let (b1, et1) = evalaux t1
                                else if b2
                                       then (True, t1 `App` et2)
                                       else (False, t)
-evalaux t@(LetType v tp term) = (True, term) -- TODO i should definitely erase types
+evalaux t@(LetType v tp term) = let (b, eterm) = evalaux term
+                                in (b, LetType v tp eterm) -- TODO i should definitely erase types
 evalaux t@(Inject i term tp) = let (b, eterm) = evalaux term
                                in (b, Inject i eterm tp)
 evalaux t@(Case (Inject i term tp) cl) = (True, subst (fst $ cl !! i) term (snd $ cl !! i))
@@ -142,12 +143,14 @@ eval t = let (b, et) = evalaux t
 alala = do
   s <- getContents
   case parser $ alexScanTokens s of
-    Ok t -> do -- putStr $ "DEBUG: " ++ show t 
+    Ok t -> do putStrLn $ "DEBUG: " ++ show t 
                putStr $ prettyShowTerm t ++ " :: "
                case typecheck t of
                  Just tp -> do putStrLn $ prettyShowType tp
                                let et = eval t
-                               putStrLn $ prettyShowTerm et ++ " :: " ++ (prettyShowType $ fromJust $ typecheck et)
+                               --putStrLn $ "DEBUG: " ++ (show $ typecheck et)
+                               putStr $ prettyShowTerm et
+                               putStrLn $ " :: " ++ (prettyShowType $ fromJust $ typecheck et)
                  Nothing -> putStrLn $ "type error"
     Fail s -> putStr $ "Parse error: " ++ s
 
