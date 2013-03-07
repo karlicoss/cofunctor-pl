@@ -58,7 +58,7 @@ in our syntax it would be
     :::haskell
     let fun = \a::TypeA.\b::TypeB.\c::TypeC.someexpression
 
-Notice you have to explicitly specify the type of the abstraction variable. Apparently, I haven't implemented type inference yet.
+Lambda binds as much to right as it can, that is, `\x::Int.a b c \y::Int.y x if a then x else y` is `\x::Int.(a b c \y::Int.(y x if a then x else y))`. Also note you have to explicitly specify the type of the abstraction variable. Apparently, I haven't implemented type inference yet. 
 
 ## Example: logical connectives
 Let's code something:
@@ -74,12 +74,12 @@ Let's code something:
 
     in and (or true false) (equiv (implies true false) false)
 
-So, we defined some simple logical connectives and can evaluate complex boolean expressions. Apparently, there is not infix notation at the moment. You can find the code in the `Examples\logical.st` file. Note that lambda binds as much to right as it can, that is, `\x::Int.a b c \y::Int.y x if a then x else y` is `\x::Int.(a b c \y::Int.(y x if a then x else y))`
+So, we defined some simple logical connectives and can evaluate complex boolean expressions. Apparently, there is not infix notation at the moment. You can find the code in the `Examples\logical.st` file. 
 
 ## Recursion
-Okay, so far, all our programs have always terminated. Actually, we have to prove it formally we need to define the evaluation strategy, but I hope it is somewhat intiutive. The main reasons for our programs to terminate, are:
+Okay, so far, all our programs have always terminated. Actually, to prove it formally we need to define the evaluation strategy, but I hope it is somewhat intiutive. The main reasons for our programs to terminate, are:
 
-1. Our programming language has types. Untyped lambda calculus does not have such a termination property (formally, it's called *the normalization property*).
+1. Our programming language has types. Untyped lambda calculus does not have such a termination property (formally, it's called *the normalization property*). It is impossible to give a type for `\x.x x`.
 2. We forbid explicit self-reference. That is, we are unable to write something like `let f = f in g`. 
 
 Apparently, programming language's ability to write a program which never halts (`while (true) {}` in C, for example) is esssential for Turing completeness. So, we have two ways of gaining it:
@@ -87,7 +87,7 @@ Apparently, programming language's ability to write a program which never halts 
 1. Get rid of types. However, programming without types reduces code readability and makes debugging extremely complex (ask python guys, AFAIK, a vast amount of their unit tests are type assertions).
 2. Permit explicit self-reference. This might lead to some problems of course, for example `let f = f in f` will never evaluate, however, still better than untyped programming.
 
-What's the language primitive to support self-reference? It is the fixed point operator. Fixed point operator is a function (in some sense, it has type `(a -> a) -> a`), which takes some function `f :: T -> T` and returns its least fixed point, which is such a value `v` that `f v = v`. It cannot be defined in terms of our current language, in Haskell it is in some sense built-in and you can define it as:
+What's the language primitive to support self-reference? It is the fixed point operator. Fixed point operator is a function (in some sense, it has type `(a -> a) -> a`), which takes some function `f :: a -> a` and returns its least fixed point, which is such a value `v` that `f v = v`. It cannot be defined in terms of our current language, in Haskell it is in some sense built-in and you can define it as:
 
     :::haskell
     fix :: (a -> a) -> a
