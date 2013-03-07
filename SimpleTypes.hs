@@ -143,7 +143,7 @@ eval t = let (b, et) = evalaux t
 alala = do
   s <- getContents
   case parser $ alexScanTokens s of
-    Ok t -> do putStrLn $ "DEBUG: " ++ show t 
+    Ok t -> do --putStrLn $ "DEBUG: " ++ show t 
                putStr $ prettyShowTerm t ++ " :: "
                case typecheck t of
                  Just tp -> do putStrLn $ prettyShowType tp
