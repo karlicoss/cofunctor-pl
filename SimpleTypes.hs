@@ -149,6 +149,7 @@ alala = do
                  Just tp -> do putStrLn $ prettyShowType tp
                                let et = eval t
                                --putStrLn $ "DEBUG: " ++ (show $ typecheck et)
+                               --putStr $ show et
                                putStr $ prettyShowTerm et
                                putStrLn $ " :: " ++ (prettyShowType $ fromJust $ typecheck et)
                  Nothing -> putStrLn $ "type error"

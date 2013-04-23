@@ -78,6 +78,7 @@ ATerm : "(" Term ")" { $2 }
       | "var" { Var $1 }
       | "true" { TrueT }
       | "false" { FalseT }
+      | "integer" { makeInt $1 }
       | "zero" { Zero }
       | "succ" ATerm { Succ $2 }
       | "pred" ATerm { Pred $2 }
@@ -184,6 +185,10 @@ makeLet [Left (x, y)] z = Let x y z
 makeLet [Right (x, y)] z = LetType x y z
 makeLet (Left (x, y) : ls) z = Let x y $ makeLet ls z
 makeLet (Right (x, y): ls) z = LetType x y $ makeLet ls z
+
+makeInt :: Int -> Term
+makeInt 0 = Zero
+makeInt n = Succ (makeInt (n - 1))
 
 parseError :: [Token] -> Ex a
 parseError tokens = failEx $ "Parse error" ++ show tokens

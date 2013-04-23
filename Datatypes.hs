@@ -52,6 +52,21 @@ prettyShowType (TypeSum [t]) = "(+ " ++ prettyShowType t ++ " +)"
 prettyShowType (TypeSum tl) = "(" ++ (intercalate "+" $ map prettyShowType tl) ++ ")" -- TODO more cases to avoid redundant parenthesis
 
 
+termToBool :: Term -> Either Bool Term
+termToBool FalseT = Left False
+termToBool TrueT = Left True
+termToBool t = Right t
+
+termToInt :: Term -> Either Int Term
+termToInt Zero = Left 0
+termToInt (Succ term) = case termToInt term of
+                            Left t -> Left $ t + 1
+                            Right t -> Right $ Succ t
+termToInt (Pred term) = case termToInt term of
+                            Left t -> Left $ if t == 0 then 0 else t - 1 
+                            Right t -> Right $ Pred t
+termToInt t = Right t
+
 -- TODO more cases
 prettyShowTerm :: Term -> String
 prettyShowTerm (Var v) = v
@@ -60,12 +75,22 @@ prettyShowTerm (t1@(Lam _ _ _ ) `App` t2) = "(" ++ prettyShowTerm t1 ++ ")" ++ "
 prettyShowTerm (t1 `App` (Var v)) = prettyShowTerm t1 ++ " " ++ v
 prettyShowTerm (t1 `App` t2) = prettyShowTerm t1 ++ " (" ++ prettyShowTerm t2 ++ ")"
 prettyShowTerm (Let v t1 t2) = "let " ++ v ++ " = " ++ prettyShowTerm t1 ++ " in " ++ prettyShowTerm t2
-prettyShowTerm TrueT = "true"
-prettyShowTerm FalseT = "false"
+prettyShowTerm t@TrueT = case termToBool t of
+                              Left r -> show r
+                              Right r -> "true"
+prettyShowTerm t@FalseT = case termToBool t of
+                              Left r -> show r
+                              Right r -> "false"
 prettyShowTerm (If t1 t2 t3) = "if" ++ " " ++ prettyShowTerm t1 ++ " " ++ "then" ++ " " ++ prettyShowTerm t2 ++ " " ++ "else" ++ " " ++ prettyShowTerm t3
-prettyShowTerm Zero = "zero"
-prettyShowTerm (Succ e) = "succ" ++ " " ++ prettyShowTerm e
-prettyShowTerm (Pred e) = "pred" ++ " " ++ prettyShowTerm e
+prettyShowTerm t@Zero = case termToInt t of
+                            Left r -> show r
+                            Right r -> "zero"
+prettyShowTerm t@(Succ e) = case termToInt t of
+                                Left r -> show r
+                                Right r -> "succ " ++ prettyShowTerm e
+prettyShowTerm t@(Pred e) = case termToInt t of
+                                Left r -> show r
+                                Right r -> "pred " ++ prettyShowTerm e
 prettyShowTerm (Iszero e) = "iszero" ++ " " ++ prettyShowTerm e
 prettyShowTerm (Fix e) = "fix" ++ " " ++ prettyShowTerm e
 prettyShowTerm (Tuple el) = "<" ++ (intercalate ", " $ map prettyShowTerm el) ++ ">"
