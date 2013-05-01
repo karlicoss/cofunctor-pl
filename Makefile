@@ -1,15 +1,15 @@
 all : interpreter
 
-interpreter: lexer parser Datatypes.hs TypeCheck.hs SimpleTypes.hs Main.hs
+interpreter: Parser.hs Lexer.hs Datatypes.hs TypeCheck.hs SimpleTypes.hs Main.hs
 	ghc --make Main.hs -o SimpleTypes
 
-test: parser lexer Datatypes.hs TypeCheck.hs EvalTest.hs ParserTest.hs Test.hs TypeCheckTest.hs
+test: Parser.hs Lexer.hs Datatypes.hs TypeCheck.hs EvalTest.hs ParserTest.hs Test.hs TypeCheckTest.hs
 	ghc --make Test.hs
 
-parser : Parser.y lexer Datatypes.hs
+Parser.hs : Parser.y Lexer.hs Datatypes.hs
 	happy --info Parser.y
 
-lexer : Lexer.x
+Lexer.hs : Lexer.x
 	alex Lexer.x
 
 clean:
