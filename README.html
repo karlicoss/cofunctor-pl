@@ -1,0 +1,169 @@
+<h2>Running the interpreter</h2>
+
+<p>The main interpreter function is in the <code>SimpleTypes.hs</code> file. You can run your program "program.st" invoking the "runhaskell SimpleTypes.hs &lt; program.st" command. Apparently, the parser is dumb at the moment and does not display parse errors in a convenient way. If you get parse error, most likely you have not placed ";" in the end of a let binding in a let list or have placed a redundand ";" before the "in" keyword.</p>
+
+<p>If you get typecheck error, most likely it is "unknown identifier error", that is you have used variable which is not in the scope.</p>
+
+<h2>Let expressions</h2>
+
+<p>The program is basically a big let expression. Something in Haskell like:</p>
+
+<pre><code>:::haskell
+a = succ zero
+b = zero
+c = mul a b
+print c
+</code></pre>
+
+<p>should be explicitly written as</p>
+
+<pre><code>:::haskell
+let a = succ zero in
+let b = zero in
+let c = mul a b in
+print c
+</code></pre>
+
+<p>Note: this program will not actually typecheck since <code>print</code> and <code>mul</code> are unknown identifiers.</p>
+
+<p>You can use a list of let bindings in a single let expression:</p>
+
+<pre><code>:::haskell
+let a = succ zero;
+    b = zero;
+    c = mul one zero
+in print c
+</code></pre>
+
+<p>Notice that unlike Haskell, you have to place semicolon after each let binding which does not precede the 'in' keyword. (Haskell has a <em>very</em> complicated parser to let you avoid semicolons and curly braces everywhere). <code>let</code>-expressions scope as much to the right as they can, so <code>let a = b in let c = d in e</code> is <code>let a = b in (let c = d in e)</code>.</p>
+
+<h2>Datatypes</h2>
+
+<p>Base datatypes are <code>Int</code> and <code>Bool</code>. For <code>Int</code>s we have keywords <code>zero</code> (<code>Int</code>), <code>succ</code> (<code>Int -&gt; Int</code>), <code>pred</code> (<code>Int -&gt; Int</code>), <code>iszero</code> (<code>Int -&gt; Bool</code>). <code>pred zero</code> yields <code>zero</code>. Actually, I should have named this datatype <code>Nat</code>.</p>
+
+<p>For <code>Bool</code>s we have keywords <code>true</code> (<code>Bool</code>), <code>false</code> (<code>Bool</code>) and <code>if</code>-expression (has type <code>Bool -&gt; T -&gt; T -&gt; T</code> for each <code>T</code> in some sense). Actually, these are enough for a big class of programs. <code>if</code>-expression scopes as much to the right as it can. So, <code>if a then b else if c then d else e</code> is actually  <code>if a then b else (if c then d else e)</code>.</p>
+
+<h2>Function application</h2>
+
+<p>As you might have already guessed, <code>f a b</code> means "apply arguments <code>a</code> and <code>b</code> to the <code>f</code>". Of course, the parser uses the standard convention that application associates to the left, so <code>f a b</code> is <code>(f a) b</code>.</p>
+
+<h2>Defining functions</h2>
+
+<p>The only functions you can define are lambda expressions. Actually, Haskell has <code>only</code> lambda-expressions for functions, the code</p>
+
+<pre><code>:::haskell
+fun a b c = someexpression
+</code></pre>
+
+<p>desugars into</p>
+
+<pre><code>:::haskell
+fun = \a -&gt; \b -&gt; \c -&gt; someexpression
+</code></pre>
+
+<p>in our syntax it would be</p>
+
+<pre><code>:::haskell
+let fun = \a::TypeA.\b::TypeB.\c::TypeC.someexpression
+</code></pre>
+
+<p>Notice you have to explicitly specify the type of the abstraction variable. Apparently, I haven't implemented type inference yet.</p>
+
+<h2>Example: logical connectives</h2>
+
+<p>Let's code something:</p>
+
+<pre><code>:::haskell
+let
+
+not = \x::Bool.if x then false else true;
+and = \x::Bool.\y::Bool.if x then if y then true else false else false;
+or = \x::Bool.\y::Bool.if x then true else if y then true else false;
+implies = \x::Bool.\y::Bool.if x then y else true;
+equiv = \x::Bool.\y::Bool.if x then y else (not y)
+
+in and (or true false) (equiv (implies true false) false)
+</code></pre>
+
+<p>So, we defined some simple logical connectives and can evaluate complex boolean expressions. Apparently, there is not infix notation at the moment. You can find the code in the <code>Examples\logical.st</code> file. Note that lambda binds as much to right as it can, that is, <code>\x::Int.a b c \y::Int.y x if a then x else y</code> is <code>\x::Int.(a b c \y::Int.(y x if a then x else y))</code></p>
+
+<h2>Recursion</h2>
+
+<p>Okay, so far, all our programs have always terminated. Actually, we have to prove it formally we need to define the evaluation strategy, but I hope it is somewhat intiutive. The main reasons for our programs to terminate, are:</p>
+
+<ol>
+<li>Our programming language has types. Untyped lambda calculus does not have such a termination property (formally, it's called <em>the normalization property</em>).</li>
+<li>We forbid explicit self-reference. That is, we are unable to write something like <code>let f = f in g</code>. </li>
+</ol>
+
+<p>Apparently, programming language's ability to write a program which never halts (<code>while (true) {}</code> in C, for example) is esssential for Turing completeness. So, we have two ways of gaining it:</p>
+
+<ol>
+<li>Get rid of types. However, programming without types reduces code readability and makes debugging extremely complex</li>
+<li>Permit explicit self-reference. This might lead to some problems of course, for example <code>let f = f in f</code> will never evaluate, however, still better than untyped programming.</li>
+</ol>
+
+<p>What's the language primitive to support self-reference? It is the fixed point operator. Fixed point operator is a function (in some sense, it has type <code>(a -&gt; a) -&gt; a</code>), which takes some function <code>f :: T -&gt; T</code> and returns its least fixed point, which is such a value <code>v</code> that <code>f v = v</code>. It cannot be defined in terms of our current language, in Haskell it is in some sense built-in and you can define it as:</p>
+
+<pre><code>:::haskell
+fix :: (a -&gt; a) -&gt; a
+fix f = f (fix f)
+</code></pre>
+
+<p>Again: we are able to define a fixed point combinator in Haskell only because it is already Turing complete.</p>
+
+<p>You might wonder: is this function ever gonna terminate since <code>fix f = f (fix f) = f (f (fix f)) = ...</code>, and you are right, it won't. Or you might wonder what should <code>fix id</code> (where <code>id</code> has type <code>Nat -&gt; Nat</code>) return, since all <code>Nat</code>'s are its fixpoints. But what are we gonna do is to find the least fixed point of <code>functions from functions to functions</code> (that is, the type variable <code>a</code> will actually be of type <code>b -&gt; c</code>). You can interpret then <code>f :: (b -&gt; c) -&gt; (b -&gt; c)</code> as "<code>f</code> is a function which takes some approximation <code>fa :: (b -&gt; c)</code> and returns a better approximation". In such sense, the least fixed point of a function is its maximum approximation. And thanks to the lazy evaluation, we are not gonna evaluate all the sequence <code>f, f (fix f), f (f (fix f)), f (f (f (fix f))), ...</code>, when we define <code>g = fix f</code> and then evaluate <code>g a</code>, we will only evaluate the sequence of approximations until we find the approximation which covers <code>a</code>. The best way to understand all this is an example. Suppose we are using the Peano arithmetics in Haskell and want to write a function which adds two numbers. Well, pretty straightforward:</p>
+
+<pre><code>:::haskell
+add :: Nat -&gt; Nat -&gt; Nat
+add = \x -&gt; \y -&gt; if (iszero x) then y else succ (add (pred x) y)
+</code></pre>
+
+<p>If we have defined <code>iszero</code>, <code>succ</code> and <code>pred</code>, this is a correct program (yet unsugared, you would have used datatype constructors and pattern matching in real Haskell programming). However, we use <code>add</code> in the body of the <code>add</code> itself, which is forbidden in our language. What should we do? Fix translation! Haskell code for fix translation would be:</p>
+
+<pre><code>:::haskell
+add :: Nat -&gt; Nat -&gt; Nat
+add = fix (\adda -&gt; \x -&gt; \y -&gt; if (iszero x) then y else succ (adda (pred x) y))
+</code></pre>
+
+<p>where <code>adda</code> is the "add approximation" function. Note that now the usage of <code>adda</code> is allowed in our programming language since it is just a variable bound by a lambda abstraction. What happens if we apply <code>add</code> to, say, 2 and 1 (meaning <code>succ succ zero</code> and <code>succ zero</code> correspondingly)? Let "..." be the shorthand for <code>(\adda -&gt; \x -&gt; \y -&gt; if (iszero x) then y else succ ((adda) (pred x) y))</code>:</p>
+
+<pre><code>add 2 1
+=&gt; (fix ...) 2 1
+=&gt; ... (fix ...) 2 1
+=&gt; if (iszero 2) then 1 else succ ((fix ...) (pred 2) 1)
+=&gt; if false then 1 else succ ((fix ...) (pred 2) 1)
+=&gt; succ ((fix ...) (pred 2) 1)
+=&gt; succ ((fix ...) 1 1)
+=&gt; succ (... (fix ...) 1 1)
+=&gt; succ (if (iszero 1) then 1 else succ ((fix ...) (pred 1) 1))
+=&gt; succ (if false then 1 else succ ((fix ...) (pred 1) 1))
+=&gt; succ (succ ((fix ...) (pred 1) 1))
+=&gt; succ (succ ((fix ...) 0 1))
+=&gt; succ (succ (... (fix ...) 0 1))
+=&gt; succ (succ (if (iszero 0) then 1 else succ ((fix ...) (pred 0) 1)))
+=&gt; succ (succ (if true then 1 else succ ((fix ...) (pred 0) 1)))
+=&gt; succ (succ 1), which is actually succ (succ (succ zero)) = 3, as expected!
+</code></pre>
+
+<p>So, basically, what is the algorithm of transforming some self-referential function <code>f :: A -&gt; B</code>, <code>f = fbody</code> into fix-point notation? Just rewrite the <code>f</code> definition as <code>f = fix (\f :: (A -&gt; B). fbody)</code>. Note that we haven't changed the function body, but we enclosed in into a lambda abstraction and now <code>f</code> in <code>fbody</code> refers to the bound variable <code>f</code>, so type checker will not complain. Try to run the <code>Examples/add.st</code> program and ensure the result is <code>succ succ succ zero</code>!</p>
+
+<p>As I already noticed, we are able to write non-terminating programs now:</p>
+
+<pre><code>::haskell
+let f = fix (\f :: Int. f) in f
+</code></pre>
+
+<p>This piece of code is in the <code>Examples/whiletrue.st</code> file. If you run it, it does typecheck and has type <code>Int</code> but its evaluation will never stop. What's worth, we can't write a program (as a part of the compiler for example) which will determine if the program in the given source file will ever terminate. For a simple proof, google the "Halting undecidability problem". Welcome to the Turing complete world!</p>
+
+<h2>Type synonims</h2>
+
+<p>TODO</p>
+
+<h2>Product types</h2>
+
+<p>TODO</p>
+
+<h2>Sum types</h2>
+
+<p>TODO</p>
