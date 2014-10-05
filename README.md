@@ -1,9 +1,13 @@
-## Running the interpreter
+Welcome to the destription of the Cofunctor programming languare!
+
+Why Cofunctor? You know, a functional programming language's name has got to be somehow related to logic/category theory, it's a law.
+
+# Running the interpreter
 The main interpreter function is in the `SimpleTypes.hs` file. You can run your program "program.st" invoking the "runhaskell SimpleTypes.hs < program.st" command. Apparently, the parser is dumb at the moment and does not display parse errors in a convenient way. If you get parse error, most likely you have not placed ";" in the end of a let binding in a let list or have placed a redundand ";" before the "in" keyword.
 
 If you get typecheck error, most likely it is "unknown identifier error", that is you have used variable which is not in the scope.
 
-## Let expressions
+# Let expressions
 
 The program is basically a big let expression. Something in Haskell like:
 
@@ -33,16 +37,16 @@ You can use a list of let bindings in a single let expression:
 
 Notice that unlike Haskell, you have to place semicolon after each let binding which does not precede the 'in' keyword. (Haskell has a *very* complicated parser to let you avoid semicolons and curly braces everywhere). `let`-expressions scope as much to the right as they can, so `let a = b in let c = d in e` is `let a = b in (let c = d in e)`.
 
-## Datatypes
+# Datatypes
 Base datatypes are `Int` and `Bool`. For `Int`s we have keywords `zero` (`Int`), `succ` (`Int -> Int`), `pred` (`Int -> Int`), `iszero` (`Int -> Bool`). `pred zero` yields `zero`. Actually, I should have named this datatype `Nat`.
 
 For `Bool`s we have keywords `true` (`Bool`), `false` (`Bool`) and `if`-expression (has type `Bool -> T -> T -> T` for each `T` in some sense). Actually, these are enough for a big class of programs. `if`-expression scopes as much to the right as it can. So, `if a then b else if c then d else e` is actually  `if a then b else (if c then d else e)`.
 
 
-## Function application
+# Function application
 As you might have already guessed, `f a b` means "apply arguments `a` and `b` to the `f`". Of course, the parser uses the standard convention that application associates to the left, so `f a b` is `(f a) b`.
 
-## Defining functions
+# Defining functions
 The only functions you can define are lambda expressions. Actually, Haskell has `only` lambda-expressions for functions, the code
 
     :::haskell
@@ -60,7 +64,7 @@ in our syntax it would be
 
 Lambda binds as much to right as it can, that is, `\x::Int.a b c \y::Int.y x if a then x else y` is `\x::Int.(a b c \y::Int.(y x if a then x else y))`. Also note you have to explicitly specify the type of the abstraction variable. Apparently, I haven't implemented type inference yet. 
 
-## Example: logical connectives
+# Example: logical connectives
 Let's code something:
 
     :::haskell
@@ -76,7 +80,7 @@ Let's code something:
 
 So, we defined some simple logical connectives and can evaluate complex boolean expressions. Apparently, there is not infix notation at the moment. You can find the code in the `Examples\logical.st` file. 
 
-## Recursion
+# Recursion
 Okay, so far, all our programs have always terminated. Actually, to prove it formally we need to define the evaluation strategy, but I hope it is somewhat intiutive. The main reasons for our programs to terminate, are:
 
 1. Our programming language has types. Untyped lambda calculus does not have such a termination property (formally, it's called *the normalization property*). It is impossible to give a type for `\x.x x`.
@@ -135,11 +139,11 @@ As I already noticed, we are able to write non-terminating programs now:
 
 This piece of code is in the `Examples/whiletrue.st` file. If you run it, it does typecheck and has type `Int` but its evaluation will never stop. What's worth, we can't write a program (as a part of the compiler for example) which will determine if the program in the given source file will ever terminate. For a simple proof, google the "Halting undecidability problem". Welcome to the Turing complete world!
 
-## Type synonims
+# Type synonims
 TODO
 
-## Product types
+# Product types
 TODO
 
-## Sum types
+# Sum types
 TODO
