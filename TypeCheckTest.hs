@@ -1,4 +1,4 @@
-module TypeCheckTest where
+module Main where
 
 import Datatypes
 import TypeCheck (gettype, typecheck)

@@ -1,4 +1,4 @@
-module ParserTest where
+module Main where
 
 import Lexer (alexScanTokens)
 import Parser (parser, Ex(..))
