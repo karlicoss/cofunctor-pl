@@ -1,4 +1,4 @@
-Welcome to the destription of the Cofunctor programming languare!
+Welcome to the Cofunctor programming language!
 
 Why Cofunctor? You know, a functional programming language's name has got to be somehow related to logic/category theory, it's a law.
 
