@@ -1,4 +1,4 @@
-module EvalTest where
+module Main where
 
 import Datatypes
 import SimpleTypes (eval, rename)
