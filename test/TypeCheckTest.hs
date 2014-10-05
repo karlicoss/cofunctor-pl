@@ -1,5 +1,9 @@
 module Main where
 
+import Test.Framework
+import Test.Framework.Providers.HUnit
+import Test.HUnit
+
 import Datatypes
 import TypeCheck (gettype, typecheck)
 
@@ -37,16 +41,6 @@ testsgettype = [
                ]
 
 
-testgettype = \(i, ((s, c, tc), t)) -> let res = gettype c tc s
-                                       in if res == t
-                                          then putStrLn $ show i ++ " " ++ "OK"
-                                          else do putStrLn $ show i ++ " " ++ "ERROR"
-                                                  putStrLn $ "Got: " ++ show res
-                                                  putStrLn $ "Expected: " ++ show t
+tests = map (\((s, c, tc), t) -> (gettype c tc s) @?= t) testsgettype
 
-test = do
-    putStrLn $ "Testing gettype"
-    mapM_ testgettype (zip [1..] testsgettype)
-
-
-main = test
+main = defaultMain $ map (testCase "") tests
