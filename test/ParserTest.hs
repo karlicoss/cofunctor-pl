@@ -1,5 +1,9 @@
 module Main where
 
+import Test.Framework
+import Test.Framework.Providers.HUnit
+import Test.HUnit
+
 import Lexer (alexScanTokens)
 import Parser (parser, Ex(..))
 import Datatypes
@@ -79,13 +83,6 @@ exeq (Ok _) (Fail _) = False
 exeq (Fail _) (Ok _) = False
 exeq (Fail _) (Fail _) = True
 
-test = do
-    let tst = \(i, (s, t)) -> let res = runTest s
-                              in if res `exeq` t
-                                 then putStrLn $ show i ++ " " ++ "OK"
-                                 else do putStrLn $ show i ++ " " ++ "ERROR"
-                                         putStrLn $ "Got: " ++ show res
-                                         putStrLn $ "Expected: " ++ show t
-    mapM_ tst (zip [1..] tests)
+testss = map (\(s, t) -> (runTest s `exeq` t) @?= True) tests
 
-main = test
+main = defaultMain $ map (testCase "") testss
