@@ -4,9 +4,9 @@ import Test.Framework
 import Test.Framework.Providers.HUnit
 import Test.HUnit
 
-import Lexer (alexScanTokens)
-import Parser (parser, Ex(..))
-import Datatypes
+import Cofunctor.Lexer (alexScanTokens)
+import Cofunctor.Parser (parser, Ex(..))
+import Cofunctor.Datatypes
 
 runTest :: String -> Ex Term
 runTest s = parser $ alexScanTokens s

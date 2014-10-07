@@ -1,8 +1,8 @@
 {-# OPTIONS_GHC -w #-}
-module Parser (parser, Ex(..)) where
+module Cofunctor.Parser (parser, Ex(..)) where
 
-import Lexer
-import Datatypes
+import Cofunctor.Lexer
+import Cofunctor.Datatypes
 import Debug.Trace (trace)
 import Control.Applicative(Applicative(..))
 

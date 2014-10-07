@@ -1,6 +1,6 @@
-module TypeCheck where
+module Cofunctor.TypeCheck where
 
-import Datatypes
+import Cofunctor.Datatypes
 import Data.List (delete)
 import Data.Maybe (isJust)
 import Debug.Trace (trace)

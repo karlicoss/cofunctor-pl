@@ -1,3 +1,3 @@
-import qualified SimpleTypes
+import qualified Cofunctor.Interpreter
 
-main = SimpleTypes.main
+main = Cofunctor.Interpreter.main

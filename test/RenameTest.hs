@@ -4,9 +4,9 @@ import Test.Framework
 import Test.Framework.Providers.HUnit
 import Test.HUnit
 
-import Datatypes
-import SimpleTypes (eval, rename)
-import TypeCheck (typecheck)
+import Cofunctor.Datatypes
+import Cofunctor.Interpreter (eval, rename)
+import Cofunctor.TypeCheck (typecheck)
 
 
 ri1 = (Var "x", "x", "alala")

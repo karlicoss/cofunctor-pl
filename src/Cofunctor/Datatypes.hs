@@ -1,4 +1,4 @@
-module Datatypes where
+module Cofunctor.Datatypes where
 
 import Data.List (intercalate)
 

@@ -1,12 +1,12 @@
-module SimpleTypes where
+module Cofunctor.Interpreter where
 
-import Datatypes
-import TypeCheck (gettype, typecheck)
+import Cofunctor.Datatypes
+import Cofunctor.TypeCheck (gettype, typecheck)
 import Data.List (delete, union, (\\), find)
 import Data.Maybe (fromJust)
 import Debug.Trace (trace)
-import Lexer (alexScanTokens)
-import Parser (parser, Ex(..))
+import Cofunctor.Lexer (alexScanTokens)
+import Cofunctor.Parser (parser, Ex(..))
 
 free :: Term -> [VarName]
 free (UnpackTuple i t) = free t

@@ -4,8 +4,8 @@ import Test.Framework
 import Test.Framework.Providers.HUnit
 import Test.HUnit
 
-import Datatypes
-import TypeCheck (gettype, typecheck)
+import Cofunctor.Datatypes
+import Cofunctor.TypeCheck (gettype, typecheck)
 
 dummy = Lam "f" (Base MyInt) (Var "f")
 
