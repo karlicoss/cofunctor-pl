@@ -20,7 +20,7 @@ executable cofunctor-pl
   -- other-modules:
   -- other-extensions:
   build-depends:
-    base >=4.7,
+    base >=4.6,
     array
   hs-source-dirs: src
   build-tools:         alex, happy
@@ -31,7 +31,7 @@ test-suite parser-test
   type   : exitcode-stdio-1.0
   main-is: ParserTest.hs
   build-depends:
-    base >=4.7,
+    base >=4.6,
     array,
     test-framework,
     test-framework-hunit,
@@ -43,7 +43,7 @@ test-suite typeckeck-test
   type   : exitcode-stdio-1.0
   main-is: TypeCheckTest.hs
   build-depends:
-    base >=4.7,
+    base >=4.6,
     array,
     test-framework,
     test-framework-hunit,
@@ -55,7 +55,7 @@ test-suite eval-test
   type   : exitcode-stdio-1.0
   main-is: EvalTest.hs
   build-depends:
-    base >=4.7,
+    base >=4.6,
     array,
     test-framework,
     test-framework-hunit,
@@ -67,7 +67,7 @@ test-suite rename-test
   type   : exitcode-stdio-1.0
   main-is: RenameTest.hs
   build-depends:
-    base >=4.7,
+    base >=4.6,
     array,
     test-framework,
     test-framework-hunit,
