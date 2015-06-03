@@ -21,7 +21,10 @@ executable cofunctor-pl
   -- other-extensions:
   build-depends:
     base >=4.6,
-    array
+    array,
+    containers >=0.5,
+    llvm-general-pure >=3.4.5.3,
+    mtl >=2.2.1
   hs-source-dirs: src
   build-tools:         alex, happy
   default-language:    Haskell2010

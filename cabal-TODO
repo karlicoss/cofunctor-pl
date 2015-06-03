@@ -1,0 +1,2 @@
+cabal install -j HUnit test-framework test-framework-hunit 
+cabal install -j llvm-general
